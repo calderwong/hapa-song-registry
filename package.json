@@ -1,0 +1,25 @@
+{
+  "name": "hapa-song-registry",
+  "version": "1.0.0",
+  "description": "Hapa Song Registry desktop app for Suno music telemetry",
+  "main": "src/main.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "python3 -m unittest discover -s test -p \"test_*.py\"",
+    "start": "electron .",
+    "ingest": "python3 scripts/ingest_suno.py",
+    "verify": "python3 scripts/verify_registry.py",
+    "check": "node --check src/main.js && node --check src/preload.js && node --check src/daw-engine.js && node --check src/renderer.js && python3 scripts/verify_registry.py",
+    "analyze-lyrics": "python3 scripts/analyze_lyric_timing.py --workers 8"
+  },
+  "keywords": [],
+  "author": "Hapa.ai / Calder Wong",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^42.2.0"
+  }
+}

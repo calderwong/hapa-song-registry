@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' file: data: https:; media-src 'self' file: https: blob:;" />
+  <title>Hapa Song Registry</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="orb"></div>
+        <div>
+          <h1>Hapa</h1>
+          <p>Song Registry</p>
+        </div>
+      </div>
+      <input id="search" class="search" placeholder="Search title, lyrics, style prompt, tags, prompt groups, stems…" />
+      <div class="quick-stats" id="stats"></div>
+      <section class="filters">
+        <h2>Filters</h2>
+        <label>Sort
+          <select id="sort">
+            <option value="created_desc">Newest first</option>
+            <option value="created_asc">Oldest first</option>
+            <option value="title_asc">Title A-Z</option>
+            <option value="duration_desc">Longest</option>
+            <option value="stems_desc">Most stems</option>
+            <option value="variations_desc">Most variations</option>
+            <option value="variations_asc">Fewest variations</option>
+            <option value="engagement_desc">Most engaged</option>
+            <option value="rating_desc">Highest rated</option>
+            <option value="model_asc">Model</option>
+          </select>
+        </label>
+        <label>Theme<select id="themeFilter"><option value="">Any theme</option></select></label>
+        <label>Instrument<select id="instrumentFilter"><option value="">Any instrument</option></select></label>
+        <label>Mood<select id="moodFilter"><option value="">Any mood</option></select></label>
+        <label>Message<select id="messageFilter"><option value="">Any message</option></select></label>
+        <label>Model<select id="modelFilter"><option value="">Any model</option></select></label>
+        <label>Prompt group<select id="promptGroupFilter"><option value="">Any prompt group</option></select></label>
+        <label>Content type
+          <select id="contentTypeFilter">
+            <option value="">Any content type</option>
+            <option value="mashup">Mashups only</option>
+            <option value="non_mashup">Exclude mashups</option>
+          </select>
+        </label>
+        <label>Music / stems
+          <select id="audioFilter">
+            <option value="">Any music/stem state</option>
+            <option value="has_music">Has music/audio</option>
+            <option value="no_music">No music/audio</option>
+            <option value="has_stems">Has stems</option>
+            <option value="no_stems">No stems</option>
+          </select>
+        </label>
+        <div class="two compact-filter">
+          <label>Min variations<input id="variationMin" type="number" min="0" step="1" placeholder="≥" /></label>
+          <label>Max variations<input id="variationMax" type="number" min="0" step="1" placeholder="≤" /></label>
+        </div>
+        <label class="check"><input id="hasStems" type="checkbox" /> Only songs with stems</label>
+        <label class="check"><input id="uniqueMasters" type="checkbox" checked /> Unique lyric masters</label>
+        <label class="check"><input id="likedOnly" type="checkbox" /> Liked or rated only</label>
+      </section>
+      <section class="playlist-panel">
+        <h2>Queue / Playlist</h2>
+        <div class="playlist-actions">
+          <button id="addFiltered">Queue filtered</button>
+          <button id="clearQueue">Clear</button>
+        </div>
+        <ol id="queue"></ol>
+      </section>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div>
+          <h2 id="resultCount">Loading…</h2>
+          <p id="subtitle">Lyric masters, variations, first-class stems, loops, mixer, ancestry, and append-only metadata</p>
+        </div>
+        <div class="top-actions">
+          <button id="openData">Open data folder</button>
+          <button id="showFile">Show current file</button>
+        </div>
+      </header>
+      <section class="hero">
+        <canvas id="viz"></canvas>
+        <div class="now">
+          <img id="cover" alt="cover" />
+          <div>
+            <h2 id="nowTitle">Select a song</h2>
+            <p id="nowMeta">Telemetry, lyrics, stems, loops, and ancestry will appear here.</p>
+            <div id="engagementBar" class="engagement-bar"></div>
+            <div class="transport">
+              <button id="prev">⏮</button>
+              <button id="play">▶</button>
+              <button id="next">⏭</button>
+              <label class="inline-check"><input id="muteMain" type="checkbox" /> Mute main</label>
+              <input id="seek" type="range" min="0" max="1000" value="0" />
+              <span id="time">0:00 / 0:00</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="content-grid">
+        <div class="panel library-panel">
+          <h2>Library</h2>
+          <div id="songList" class="song-list"></div>
+        </div>
+        <div class="panel detail-panel">
+          <nav class="tabs">
+            <button class="tab active" data-tab="overview">Overview</button>
+            <button class="tab" data-tab="lyrics">Lyrics</button>
+            <button class="tab" data-tab="stems">Stems</button>
+            <button class="tab" data-tab="timeline">Timeline</button>
+            <button class="tab" data-tab="loops">Loops</button>
+            <button class="tab" data-tab="mixer">Mixer</button>
+            <button class="tab" data-tab="ancestry">Ancestry</button>
+            <button class="tab" data-tab="relations">Relations</button>
+            <button class="tab" data-tab="telemetry">Telemetry</button>
+          </nav>
+          <div id="tab-overview" class="tab-content active"></div>
+          <div id="tab-lyrics" class="tab-content"></div>
+          <div id="tab-stems" class="tab-content"></div>
+          <div id="tab-timeline" class="tab-content"></div>
+          <div id="tab-loops" class="tab-content"></div>
+          <div id="tab-mixer" class="tab-content"></div>
+          <div id="tab-ancestry" class="tab-content"></div>
+          <div id="tab-relations" class="tab-content"></div>
+          <div id="tab-telemetry" class="tab-content"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <section id="timelinePage" class="timeline-page" aria-hidden="true">
+    <div class="timeline-page-shell">
+      <header class="timeline-page-head">
+        <div>
+          <h1>Full Timeline</h1>
+          <p>8-count loop grid and detached stem lanes for the selected variation.</p>
+        </div>
+        <button id="closeTimelinePage">Close timeline</button>
+      </header>
+      <div id="timelinePageBody" class="timeline-page-body"></div>
+    </div>
+  </section>
+  <section id="stemLabPage" class="stem-lab-page" aria-hidden="true">
+    <div class="stem-lab-shell">
+      <header class="stem-lab-head">
+        <div>
+          <h1>Professional DAW Workstation</h1>
+          <p>Shared-clock Web Audio transport, decoded stem buffers, track buses, loop regions, waveforms, spectrograms, and FFT analysis.</p>
+        </div>
+        <button id="closeStemLabPage">Close stems</button>
+      </header>
+      <div id="stemLabBody" class="stem-lab-body"></div>
+    </div>
+  </section>
+  <aside id="loopDock" class="loop-dock">
+    <div class="dock-head"><h2>Loop Dock</h2><span id="loopCount">0 loops</span></div>
+    <div id="loopDockList" class="loop-dock-list"><div class="empty">Clip from main/stems or save mixes to populate this dock.</div></div>
+  </aside>
+  <div id="toast" class="toast"></div>
+  <audio id="mainAudio" crossorigin="anonymous"></audio>
+  <script src="daw-engine.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+
+# OS/editor noise
+.DS_Store
+.AppleDouble
+.LSOverride
+*.swp
+*.swo
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+data/launcher.log
+
+# local/generated registry state
+# Keep these local unless intentionally publishing a sanitized snapshot.
+data/*.sqlite
+data/*.sqlite-*
+data/registry.json
+data/history_events.json
+data/lyric_timings/
+data/derivatives/
+
+# Python caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# build outputs
+dist/
+build/
+coverage/
