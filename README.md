@@ -117,3 +117,11 @@ Bananas attribution option: contributors may opt into Bananas work-contribution 
 - Registry data contains local filesystem paths and generated music metadata. Treat `data/` outputs as local operational state unless intentionally publishing a sanitized snapshot.
 - Lyric timing is generated offline from local audio. The analyzer uses purchased/generated Vocals stems when available and falls back to the full mix otherwise. These are phrase-level, audio-derived timings rather than word-level forced alignment; songs with dense mixes or ad-libbed/generated vocals may still be approximate.
 - Stem playback and DAW engine behavior depend on browser/Electron Web Audio support and readable local audio paths.
+
+<!-- HAPA-README-SCREENSHOT-2026-05-22 -->
+
+## Screenshot
+
+![hapa-song-registry UI screenshot](docs/assets/screenshots/readme-hapa-song-registry-static-fallback.png)
+
+Hapa Song Registry static-file fallback; Electron preload is required for the full registry UI.
