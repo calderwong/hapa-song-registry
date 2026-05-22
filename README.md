@@ -125,3 +125,52 @@ Bananas attribution option: contributors may opt into Bananas work-contribution 
 ![hapa-song-registry UI screenshot](docs/assets/screenshots/readme-hapa-song-registry-static-fallback.png)
 
 Hapa Song Registry static-file fallback; Electron preload is required for the full registry UI.
+
+
+<!-- HAPA-README-QUALITY-PASS-2026-05-22 -->
+
+## Hapa ecosystem context
+
+### Purpose
+
+Local registry for Hapa songs, Suno/imported audio assets, lyrics, prompts, timing analysis, and music-library metadata.
+
+### Current status
+
+- Status: **active music registry**.
+- Local source root: `/Users/calderwong/Desktop/hapa-song-registry`.
+- This README is intended to be useful to both human operators and future agents: it should explain what the node is for, what it consumes, what it emits, how it connects to other Hapa nodes, and what should stay out of git.
+
+### Inputs
+
+- Suno library audio, lyric docs, prompt archives, timing-analysis scripts, manual metadata edits
+
+### Outputs
+
+- Registry JSON/SQLite records, song metadata, lyric timing artifacts, and searchable library views
+
+### Interfaces
+
+- Electron renderer
+- Data/SQLite registry
+- Scripts for lyric/audio analysis
+
+### Related Hapa nodes
+
+- [Hapa AG / Dev Proto](file:///Users/calderwong/Desktop/hapa-dev-proto) — Primary local-first app; many nodes feed it cards, assets, chat, debug, or projection data.
+- [Hapa Worldbuilding Wiki](file:///Users/calderwong/Desktop/Hapa_Worldbuilding_Wiki) — Canonical Markdown graph for lore, nodes, names, cards, systems, and provenance.
+- [Overwatch](file:///Users/calderwong/Desktop/.Overwatch) — Operations map: inventory, source index, task inbox, protocols, and runbooks.
+- [Hapa Telemetry Node](file:///Users/calderwong/Desktop/hapa-telemetry-node) — Discovery/monitoring hub for node health, capabilities, launchers, and relationships.
+- [Hapa Keys Node](file:///Users/calderwong/Desktop/hapa-keys-node) — Local key vault used by authenticated nodes and tools.
+- [Hapa Lore Node](file:///Users/calderwong/Desktop/hapa-lore-node) — Chronicle/canon service for daily progress, lore, and searchable wisdom.
+- [Hapa Anvil Node](file:///Users/calderwong/Desktop/hapa-anvil-node) — Card standardization/evaluation/forge node for turning raw card ideas into usable artifacts.
+- [Hapa Janus World Node](file:///Users/calderwong/Desktop/hapa-janus-world-node) — World-state truth kernel and event tape for Janus/desktop simulation work.
+- [Hapa MLX Station](file:///Users/calderwong/hapa-mlx-station) — Apple Silicon media-generation station that produces visual/audio assets for cards, wiki, and production runs.
+- [Hapa Lance Node](file:///Users/calderwong/Desktop/hapa-lance-node) — Local indexing/projection layer for cards, wiki chunks, embeddings, and multimodal records.
+
+### Operating contract
+
+- Treat generated media, local databases, model weights, dependency folders, build outputs, app bundles, and secrets as runtime artifacts unless this README explicitly says otherwise.
+- Prefer loopback/local operation first; expose network services only with explicit auth and operator intent.
+- When this node produces artifacts for another node, record enough provenance for the receiving node or wiki page to recover the source path, command, prompt, or API request.
+- Keep `README.md`, `LICENSE`, `NOTICE.md` where applicable, and repo-local screenshots current as the node evolves.
