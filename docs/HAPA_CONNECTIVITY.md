@@ -1,7 +1,7 @@
 <!-- HAPA-CONNECTIVITY-DOC:BEGIN -->
 # Hapa Connectivity
 
-Generated: 2026-06-01T01:03:18.084Z
+Generated: 2026-06-02T04:48:08Z
 
 This file is a publication-safe cross-link for humans and AIs. It describes how this repo fits into the Hapa system without embedding private local paths, secrets, heavy assets, DB payloads, or generated media.
 
@@ -55,21 +55,20 @@ This node coordinates work, runtime status, agent state, or board visibility for
 ## Publication Boundary
 
 - Publication strategy: `publish_source_with_vault_pointers`
-- Publication wave: `wave_2_small_dirty_no_remote`
-- Current assembly gate: `local_pointer_after_review`
+- Publication wave: `wave_1_clean_no_remote_after_local_boundary_commit`
+- Current assembly gate: `operator_remote_intent`
 
 Source code, docs, schemas, and tiny fixtures are Git candidates after preflight. Runtime DBs, WAL/SHM files, local tokens, generated media, model weights, logs, app bundles, and vault exports stay out of public Git and should be represented by pointer manifests or rebuild instructions.
 
 ## Open Gates
 
-- Review 18 dirty working-tree entries before pinning.
 - Choose GitHub owner, repo name, and private/public visibility before remote creation.
 
 ## Safe Next Commands
 
 - `git status --short`
 - `Apply vault pointer manifests only after vault copy and hash verification.`
-- `Commit only intentional docs/source changes after reviewing the dirty worktree.`
+- `Commit only intentional docs/source changes; keep generated data under the vault/runtime boundary.`
 - `Choose GitHub owner, repo name, and private/public visibility before remote creation.`
 - `Run gitleaks/history scan before public release.`
 - `Do not move repos, create remotes, push, purge, copy heavy assets, or rewrite history without the matching approval gate.`
@@ -80,9 +79,9 @@ Run the fastest local checks that exist for this repo before publication or asse
 
 ```bash
 git status --short
-npm run check
 npm test
-python -m compileall .
+npm run check
+python3 -m py_compile scripts/ingest_suno.py scripts/ace_stem_queue.py scripts/audio_telemetry.py scripts/export_five_stems_demucs.py
 ```
 
 <!-- HAPA-CONNECTIVITY-DOC:END -->

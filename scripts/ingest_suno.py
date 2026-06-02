@@ -294,6 +294,35 @@ def load_existing_lyric_timings(project_root, songs):
     return attached
 
 
+def load_existing_audio_telemetry(project_root, songs):
+    manifest_dir = pathlib.Path(project_root) / 'data' / 'audio_telemetry' / 'manifests'
+    if not manifest_dir.exists():
+        return 0
+    attached = 0
+    for song in songs:
+        path = manifest_dir / f"{song.get('id')}.json"
+        if not path.exists():
+            continue
+        try:
+            manifest = json.loads(path.read_text(encoding='utf-8'))
+            song['audioTelemetry'] = {
+                'status': manifest.get('status'),
+                'latestRunId': manifest.get('runId'),
+                'summary': manifest.get('summary') or {},
+                'manifestPath': str(path),
+                'timelinePath': manifest.get('latestPath'),
+                'runPath': manifest.get('runPath'),
+                'confidence': manifest.get('confidence'),
+                'updatedAt': manifest.get('updatedAt'),
+                'timelineEventCount': manifest.get('timelineEventCount', 0),
+                'warnings': manifest.get('warnings', []),
+            }
+            attached += 1
+        except Exception:
+            continue
+    return attached
+
+
 def build_registry(library_root=DEFAULT_LIBRARY, project_root=DEFAULT_PROJECT, lyric_roots=None):
     library_root = pathlib.Path(library_root)
     project_root = pathlib.Path(project_root)
@@ -352,6 +381,7 @@ def build_registry(library_root=DEFAULT_LIBRARY, project_root=DEFAULT_PROJECT, l
     lyric_masters = build_lyric_masters(songs, stems, external_lyrics)
     prompt_groups = build_prompt_groups(songs, lyric_masters)
     lyric_timing_count = load_existing_lyric_timings(project_root, songs)
+    audio_telemetry_count = load_existing_audio_telemetry(project_root, songs)
     groups = build_groups(songs, stems_by_parent)
     similarities = build_similarities(songs)
     registry = {
@@ -359,7 +389,7 @@ def build_registry(library_root=DEFAULT_LIBRARY, project_root=DEFAULT_PROJECT, l
         'sourceLibrary': str(library_root),
         'lyricRoots': [str(p) for p in (DEFAULT_LYRIC_ROOTS if lyric_roots is None else [pathlib.Path(p) for p in lyric_roots]) if pathlib.Path(p).exists()],
         'defaultAuthors': list(DEFAULT_AUTHORS),
-        'counts': {'songs': len(songs), 'stems': len(stems), 'groups': len(groups), 'similarities': len(similarities), 'externalLyrics': len(external_lyrics), 'lyricMasters': len(lyric_masters), 'promptGroups': len(prompt_groups), 'mashups': sum(1 for s in songs if s.get('isMashup')), 'lyricTimings': lyric_timing_count},
+        'counts': {'songs': len(songs), 'stems': len(stems), 'groups': len(groups), 'similarities': len(similarities), 'externalLyrics': len(external_lyrics), 'lyricMasters': len(lyric_masters), 'promptGroups': len(prompt_groups), 'mashups': sum(1 for s in songs if s.get('isMashup')), 'lyricTimings': lyric_timing_count, 'audioTelemetry': audio_telemetry_count},
         'songs': songs,
         'stems': stems,
         'externalLyrics': external_lyrics,
@@ -550,6 +580,9 @@ def write_sqlite(registry, db_path):
     create table lyric_lines(song_id text, line_index integer, section_index integer, section_label text, text text, start real, end real, timestamp text, confidence real, primary key(song_id,line_index));
     create table lyric_sections(song_id text, section_index integer, label text, start real, end real, timestamp text, line_start integer, line_end integer, confidence real, primary key(song_id,section_index));
     create table lyric_timing_runs(song_id text primary key, version integer, method text, source text, source_path text, analyzed_at text, confidence real, warnings_json text, stats_json text);
+    create table audio_telemetry_runs(song_id text primary key, run_id text, status text, confidence real, created_at text, updated_at text, duration real, bpm real, tempo_confidence real, hook_count integer, section_count integer, beat_count integer, bar_count integer, summary_json text, manifest_path text, run_path text, warnings_json text, provenance_json text);
+    create table audio_telemetry_events(song_id text, run_id text, event_id text, event_type text, label text, start real, end real, confidence real, score real, source text, reasons_json text, metadata_json text, primary key(song_id, run_id, event_id));
+    create table audio_telemetry_queue_jobs(id text primary key, song_id text, title text, status text, priority integer, attempts integer, updated_at text, analysis_key text, last_error text, source_json text);
     create table facets(song_id text, kind text, value text);
     create table groups(id text primary key, kind text, key text, count integer, song_ids_json text);
     create table similarities(song_a text, song_b text, score real, reason text);
@@ -561,6 +594,8 @@ def write_sqlite(registry, db_path):
     create index idx_songs_prompt_group on songs(prompt_group_id);
     create index idx_songs_content_type on songs(content_type);
     create index idx_events_subject on events(subject_type, subject_id);
+    create index idx_audio_telemetry_events_type on audio_telemetry_events(event_type);
+    create index idx_audio_telemetry_events_song_type on audio_telemetry_events(song_id, event_type);
     ''')
     generated_at = registry.get('generatedAt')
     for author in DEFAULT_AUTHORS:
@@ -588,6 +623,19 @@ def write_sqlite(registry, db_path):
                 cur.execute('insert into lyric_lines values(?,?,?,?,?,?,?,?,?)', (s['id'], line.get('index'), line.get('sectionIndex'), line.get('section'), line.get('text'), line.get('start'), line.get('end'), line.get('timestamp'), line.get('confidence')))
             for sec in timing.get('sections', []):
                 cur.execute('insert into lyric_sections values(?,?,?,?,?,?,?,?,?)', (s['id'], sec.get('index'), sec.get('label'), sec.get('start'), sec.get('end'), sec.get('timestamp'), sec.get('lineStart'), sec.get('lineEnd'), sec.get('confidence')))
+        telemetry = s.get('audioTelemetry')
+        if telemetry:
+            summary = telemetry.get('summary') or {}
+            cur.execute('insert into audio_telemetry_runs values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (
+                s['id'], telemetry.get('latestRunId'), telemetry.get('status'), telemetry.get('confidence'), None, telemetry.get('updatedAt'), s.get('duration'), summary.get('bpm'), summary.get('tempoConfidence'), summary.get('hookCount'), summary.get('sectionCount'), summary.get('beatCount'), summary.get('barCount'), json.dumps(summary, ensure_ascii=False), telemetry.get('manifestPath'), telemetry.get('runPath') or telemetry.get('timelinePath'), json.dumps(telemetry.get('warnings', []), ensure_ascii=False), json.dumps({'source': 'registry_manifest'}, ensure_ascii=False)
+            ))
+            latest_path = telemetry.get('timelinePath') or telemetry.get('runPath')
+            try:
+                run_doc = json.loads(pathlib.Path(latest_path).read_text(encoding='utf-8')) if latest_path and pathlib.Path(latest_path).exists() else {}
+                for ev in (run_doc.get('timeline') or {}).get('events', []):
+                    cur.execute('insert or replace into audio_telemetry_events values(?,?,?,?,?,?,?,?,?,?,?,?)', (s['id'], telemetry.get('latestRunId'), ev.get('id') or stable_id('audioevt', s['id'], ev.get('type'), ev.get('start')), ev.get('type'), ev.get('label'), ev.get('start'), ev.get('end'), ev.get('confidence'), ev.get('score'), ev.get('source'), json.dumps(ev.get('reasons', []), ensure_ascii=False), json.dumps(ev, ensure_ascii=False)))
+            except Exception:
+                pass
         for kind, vals in s.get('facets', {}).items():
             for val in vals:
                 cur.execute('insert into facets values(?,?,?)', (s['id'], kind, val))

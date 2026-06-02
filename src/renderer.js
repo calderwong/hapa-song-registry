@@ -29,9 +29,18 @@ const state = {
   dawStatusRaf: null,
   dawVisualRaf: null,
   dawSpectrogramHistory: new Map(),
+  audioTelemetryRuns: new Map(),
+  audioTelemetryQueue: null,
+  uiFeedbackInstalled: false,
 };
 
 const $ = (id) => document.getElementById(id);
+const uiAudio = {
+  ctx: null,
+  muted: localStorage.getItem('hapa-song-registry-muted') === 'true',
+  master: null,
+  compressor: null,
+};
 const fmt = (seconds) => {
   seconds = Number(seconds || 0);
   const m = Math.floor(seconds / 60);
@@ -43,6 +52,104 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 const clamp = (n, min, max) => Math.max(min, Math.min(max, Number(n || 0)));
 const idFor = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 const rawMetric = (item, key) => Number(item?.raw?.[key] || item?.[key] || 0);
+
+function getUiAudioContext() {
+  if (!uiAudio.ctx) uiAudio.ctx = new (window.AudioContext || window.webkitAudioContext)();
+  return uiAudio.ctx;
+}
+
+function getUiOutput(ctx) {
+  if (!uiAudio.master || !uiAudio.compressor) {
+    uiAudio.master = ctx.createGain();
+    uiAudio.compressor = ctx.createDynamicsCompressor();
+    uiAudio.compressor.threshold.setValueAtTime(-26, ctx.currentTime);
+    uiAudio.compressor.knee.setValueAtTime(18, ctx.currentTime);
+    uiAudio.compressor.ratio.setValueAtTime(5, ctx.currentTime);
+    uiAudio.compressor.attack.setValueAtTime(0.003, ctx.currentTime);
+    uiAudio.compressor.release.setValueAtTime(0.11, ctx.currentTime);
+    uiAudio.master.gain.setValueAtTime(0.72, ctx.currentTime);
+    uiAudio.master.connect(uiAudio.compressor);
+    uiAudio.compressor.connect(ctx.destination);
+  }
+  return uiAudio.master;
+}
+
+function playUiTone(type, startFreq, endFreq, duration, startGain = 0.032) {
+  if (uiAudio.muted) return;
+  try {
+    const ctx = getUiAudioContext();
+    if (ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(startFreq, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(1, endFreq), ctx.currentTime + duration);
+    gain.gain.setValueAtTime(startGain, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(getUiOutput(ctx));
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + duration);
+  } catch (err) {
+    console.debug('UI audio unavailable', err);
+  }
+}
+
+function playUiSound(kind = 'click') {
+  if (kind === 'hover') return playUiTone('sine', 760, 1120, 0.045, 0.02);
+  if (kind === 'open') return playUiTone('triangle', 420, 680, 0.09, 0.026);
+  if (kind === 'select') return playUiTone('sawtooth', 860, 520, 0.085, 0.032);
+  return playUiTone('square', 560, 280, 0.07, 0.034);
+}
+
+function syncSoundToggle() {
+  const btn = $('soundToggle');
+  if (!btn) return;
+  btn.textContent = uiAudio.muted ? 'SFX OFF' : 'SFX ON';
+  btn.setAttribute('aria-pressed', String(!uiAudio.muted));
+  btn.classList.toggle('muted', uiAudio.muted);
+}
+
+function closestUi(event, selector) {
+  const target = event.target;
+  return target instanceof Element ? target.closest(selector) : null;
+}
+
+function installUiFeedback() {
+  if (state.uiFeedbackInstalled) return;
+  state.uiFeedbackInstalled = true;
+  syncSoundToggle();
+
+  let lastHovered = null;
+  document.addEventListener('pointerover', (event) => {
+    const target = closestUi(event, 'button, select, .song-card, .mini-card, .node, .relation, .tab, .facet, .loop-card');
+    if (!target || target === lastHovered) return;
+    lastHovered = target;
+    playUiSound('hover');
+  }, true);
+
+  document.addEventListener('pointerout', (event) => {
+    if (!event.relatedTarget || !(event.relatedTarget instanceof Node) || !lastHovered?.contains(event.relatedTarget)) lastHovered = null;
+  }, true);
+
+  document.addEventListener('click', (event) => {
+    if (closestUi(event, 'button, .song-card, .mini-card, .node, .relation, .tab, .facet, .loop-card')) playUiSound('click');
+  }, true);
+
+  document.addEventListener('pointerdown', (event) => {
+    if (closestUi(event, 'select')) playUiSound('open');
+  }, true);
+
+  document.addEventListener('change', (event) => {
+    if (closestUi(event, 'select, input[type="checkbox"]')) playUiSound('select');
+  }, true);
+
+  $('soundToggle')?.addEventListener('click', () => {
+    uiAudio.muted = !uiAudio.muted;
+    localStorage.setItem('hapa-song-registry-muted', String(uiAudio.muted));
+    syncSoundToggle();
+  });
+}
 
 function virtualExternalLyricSongs() {
   const existingIds = new Set((state.registry?.songs || []).map((s) => s.id));
@@ -421,6 +528,7 @@ function wireEvents() {
   $('stemLabPage').addEventListener('click', (e) => { if (e.target.id === 'stemLabPage') closeStemLabPage(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeTimelinePage(); closeStemLabPage(); } });
   document.querySelectorAll('.tab').forEach((btn) => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+  installUiFeedback();
 }
 
 function renderStats() {
@@ -428,7 +536,7 @@ function renderStats() {
   $('stats').innerHTML = [
     ['Songs', state.songs.length], ['Stems', stemCount],
     ['Masters', state.masters.size], ['Prompt groups', (state.registry.promptGroups || []).length],
-    ['Mashups', (state.registry.counts || {}).mashups || state.songs.filter(isMashup).length], ['Loops', state.loops.length],
+    ['Mashups', (state.registry.counts || {}).mashups || state.songs.filter(isMashup).length], ['Audio telemetry', (state.registry.counts || {}).audioTelemetry || state.songs.filter((s) => s.audioTelemetry).length], ['Loops', state.loops.length],
   ].map(([label, val]) => `<div class="stat"><b>${Number(val).toLocaleString()}</b><span>${label}</span></div>`).join('');
 }
 
@@ -526,8 +634,47 @@ async function selectSong(id, autoplay = false) {
   await loadMainAudio(song);
   await loadStemDeck(song);
   await loadDawSessionForCurrent(song);
+  await loadAudioTelemetryForCurrent(song);
   renderDetails();
   if (autoplay) playAll();
+}
+
+async function loadAudioTelemetryForCurrent(song) {
+  if (!song || !window.hapa?.loadAudioTelemetry) return null;
+  if (state.audioTelemetryRuns.has(song.id)) return state.audioTelemetryRuns.get(song.id);
+  try {
+    const run = await window.hapa.loadAudioTelemetry(song.id);
+    if (run) state.audioTelemetryRuns.set(song.id, run);
+    return run;
+  } catch (err) {
+    console.warn('audio telemetry load failed', err);
+    return null;
+  }
+}
+
+function audioTelemetryFor(song = state.current) {
+  if (!song) return null;
+  return state.audioTelemetryRuns.get(song.id) || song.audioTelemetry || null;
+}
+
+async function analyzeCurrentAudioTelemetry() {
+  if (!state.current || !window.hapa?.analyzeAudioTelemetry) return;
+  const song = state.current;
+  const tab = $('tab-telemetry');
+  if (tab) tab.insertAdjacentHTML('afterbegin', '<div class="timing-summary">Analyzing audio telemetry… decoding once and writing reusable artifacts.</div>');
+  try {
+    const result = await window.hapa.analyzeAudioTelemetry(song.id);
+    state.audioTelemetryRuns.delete(song.id);
+    await loadAudioTelemetryForCurrent(song);
+    state.registry = await window.hapa.loadRegistry();
+    const refreshed = (state.registry.songs || []).find((s) => s.id === song.id);
+    if (refreshed) state.current = refreshed;
+    renderStats(); renderTimeline(state.current); renderTelemetry(state.current);
+    toast(`Audio telemetry analyzed for ${displayTitle(state.current)}.`);
+    console.log('audio telemetry result', result);
+  } catch (err) {
+    toast(`Audio telemetry failed: ${err.message}`);
+  }
 }
 
 async function loadMainAudio(song) {
@@ -801,7 +948,11 @@ function timelineActivity(stem, index, total) {
 function timelineMarkup(s, fullPage = false) {
   const stems = stemsForVariation(s.id);
   const duration = Math.max(1, Number(s.duration || $('mainAudio').duration || 0));
-  const bpm = Number(s.settings?.bpm || s.raw?.bpm || 120);
+  const telemetry = audioTelemetryFor(s);
+  const telemetrySummary = telemetry?.summary || telemetry?.summary || {};
+  const telemetryEvents = telemetry?.timeline?.events || [];
+  const telemetryBpm = Number(telemetrySummary.bpm || telemetry?.rhythm?.bpm || 0);
+  const bpm = Number(telemetryBpm || s.settings?.bpm || s.raw?.bpm || 120);
   const countSeconds = 60 / Math.max(1, bpm);
   const fourCountSeconds = countSeconds * 4;
   const eightCountSeconds = countSeconds * 8;
@@ -826,8 +977,15 @@ function timelineMarkup(s, fullPage = false) {
     }).join('');
     return `<div class="timeline-stem-row"><div class="timeline-stem-label"><b>${esc(st.stemType || 'Stem')}</b><small>▶ ${e.plays} • ♥ ${e.likes} • ${fmt(st.duration)}</small><button data-stem-play="${st.id}">solo</button></div><div class="timeline-stem-cells">${cells}</div></div>`;
   }).join('');
+  const telemetryMarkers = telemetryEvents.filter((ev) => ['hook_candidate', 'section', 'peak'].includes(ev.type)).slice(0, 24).map((ev) => {
+    const start = Number(ev.start || 0);
+    const left = clamp((start / duration) * 100, 0, 100);
+    const kind = ev.type === 'hook_candidate' ? 'hot' : ev.type === 'section' ? 'gold' : '';
+    return `<button class="badge ${kind}" style="position:relative;left:${left}%;margin-left:-.5rem" title="${esc(ev.type)} ${fmt(ev.start)}–${fmt(ev.end)} confidence ${Math.round((ev.confidence || 0) * 100)}%">${esc(ev.label || ev.type)}</button>`;
+  }).join('');
   return `<div class="timeline-view ${fullPage ? 'full' : ''}">
-    <div class="timing-summary">Timeline uses ${bpm} BPM: every cell is an 8-count (${fmt(eightCountSeconds)}), split into two 4-count clip zones. Stem lanes show activity/frequency/telemetry for the selected variation only.</div>
+    <div class="timing-summary">Timeline uses ${bpm} BPM${telemetryBpm ? ' from persisted audio telemetry' : ''}: every cell is an 8-count (${fmt(eightCountSeconds)}), split into two 4-count clip zones. Stem lanes show activity/frequency/telemetry for the selected variation only.</div>
+    ${telemetryMarkers ? `<h2>Audio telemetry markers</h2><div class="telemetry-marker-strip">${telemetryMarkers}</div>` : '<div class="timing-summary low">No persisted audio telemetry markers yet. Use the Telemetry tab to analyze this song.</div>'}
     <div class="timeline-grid">${barCells}</div>
     <h2>Stem activity / frequency lanes</h2>
     ${stemRows || '<div class="empty">No stems on this variation. Pick another variation in Overview/Stems.</div>'}
@@ -1273,7 +1431,24 @@ function renderRelations(s) {
   document.querySelectorAll('[data-rel]').forEach((el) => el.addEventListener('click', () => selectSong(el.dataset.rel, false)));
 }
 function renderTelemetry(s) {
-  $('tab-telemetry').innerHTML = `<h2>Normalized telemetry</h2><pre>${esc(JSON.stringify({ id: s.id, title: displayTitle(s), createdAt: s.createdAt, duration: s.duration, model: s.model, majorModelVersion: s.majorModelVersion, engagement: engagementFor(s, 'song'), facets: s.facets, stemCount: s.stemCount, stemTypes: s.stemTypes, lyricTiming: s.lyricTiming ? { method: s.lyricTiming.method, source: s.lyricTiming.source, sourcePath: s.lyricTiming.sourcePath, confidence: s.lyricTiming.confidence, stats: s.lyricTiming.stats, warnings: s.lyricTiming.warnings } : null, settings: s.settings, localPath: s.localPath, audioUrl: s.audioUrl, imageUrl: s.imageUrl }, null, 2))}</pre><h2>Append-only overlays for current song</h2><pre>${esc(JSON.stringify(state.events.filter((e) => JSON.stringify(e).includes(s.id)).slice(-80), null, 2))}</pre><h2>Raw Suno metadata</h2><pre>${esc(JSON.stringify(s.raw, null, 2))}</pre>`;
+  const persisted = audioTelemetryFor(s);
+  const run = persisted?.kind === 'hapa.audioTelemetry.run' ? persisted : null;
+  const manifest = run ? s.audioTelemetry : persisted;
+  const summary = run?.summary || manifest?.summary || null;
+  const hooks = (run?.timeline?.events || []).filter((ev) => ev.type === 'hook_candidate').slice(0, 12);
+  const sections = (run?.timeline?.events || []).filter((ev) => ev.type === 'section').slice(0, 12);
+  $('tab-telemetry').innerHTML = `<div class="action-row"><button id="analyzeAudioTelemetry">Analyze / refresh audio telemetry</button><button id="openTelemetryManifest" ${manifest?.manifestPath ? '' : 'disabled'}>Show manifest in folder</button></div>
+    <h2>Audio telemetry analysis queue</h2>
+    ${summary ? `<div class="timing-summary">Persisted run ${esc(run?.runId || manifest?.latestRunId || 'manifest')} • status ${esc(run?.status || manifest?.status)} • confidence ${Math.round(((run?.confidence ?? manifest?.confidence) || 0) * 100)}% • BPM ${esc(summary.bpm || 'n/a')} • ${summary.beatCount || 0} beats • ${summary.sectionCount || 0} sections • ${summary.hookCount || 0} hook candidates</div>` : '<div class="timing-summary low">No persisted audio telemetry yet. Click Analyze to decode once, write artifacts, and reuse the summary/timeline across the app.</div>'}
+    ${hooks.length ? `<h2>Hook candidates</h2>${hooks.map((ev) => `<div class="kv"><b>${esc(ev.label || 'hook candidate')}</b><span>${fmt(ev.start)}–${fmt(ev.end)} • ${Math.round((ev.confidence || 0) * 100)}% • ${(ev.reasons || []).map(esc).join(', ')}</span></div>`).join('')}` : ''}
+    ${sections.length ? `<h2>Sections</h2>${sections.map((ev) => `<div class="kv"><b>${esc(ev.label || 'section')}</b><span>${fmt(ev.start)}–${fmt(ev.end)} • ${Math.round((ev.confidence || 0) * 100)}%</span></div>`).join('')}` : ''}
+    <h2>Normalized song telemetry</h2><pre>${esc(JSON.stringify({ id: s.id, title: displayTitle(s), createdAt: s.createdAt, duration: s.duration, model: s.model, majorModelVersion: s.majorModelVersion, audioTelemetry: s.audioTelemetry || null, engagement: engagementFor(s, 'song'), facets: s.facets, stemCount: s.stemCount, stemTypes: s.stemTypes, lyricTiming: s.lyricTiming ? { method: s.lyricTiming.method, source: s.lyricTiming.source, sourcePath: s.lyricTiming.sourcePath, confidence: s.lyricTiming.confidence, stats: s.lyricTiming.stats, warnings: s.lyricTiming.warnings } : null, settings: s.settings, localPath: s.localPath, audioUrl: s.audioUrl, imageUrl: s.imageUrl }, null, 2))}</pre>
+    ${run ? `<h2>Persisted audio telemetry run</h2><pre>${esc(JSON.stringify({ runId: run.runId, summary: run.summary, waveform: run.waveform, rhythm: run.rhythm, timelinePreview: (run.timeline?.events || []).slice(0, 40), provenance: run.provenance, warnings: run.warnings }, null, 2))}</pre>` : ''}
+    <h2>Append-only overlays for current song</h2><pre>${esc(JSON.stringify(state.events.filter((e) => JSON.stringify(e).includes(s.id)).slice(-80), null, 2))}</pre><h2>Raw Suno metadata</h2><pre>${esc(JSON.stringify(s.raw, null, 2))}</pre>`;
+  const analyzeBtn = $('analyzeAudioTelemetry');
+  if (analyzeBtn) analyzeBtn.addEventListener('click', analyzeCurrentAudioTelemetry);
+  const showBtn = $('openTelemetryManifest');
+  if (showBtn && manifest?.manifestPath) showBtn.addEventListener('click', () => window.hapa.showInFolder(manifest.manifestPath));
 }
 function stemsFor(id) { return stemsForVariation(id); }
 

@@ -25,11 +25,11 @@ Verified from repository files and `data/registry.json` during the 2026-05-21 do
 
 ## Inputs
 
-- Suno telemetry export: `/Users/calderwong/Desktop/suno-library/suno_library_metadata.json`.
-- Local audio files discovered below `/Users/calderwong/Desktop/suno-library`.
+- Suno telemetry export: `$HAPA_SUNO_LIBRARY_ROOT/suno_library_metadata.json`.
+- Local audio files discovered below `$HAPA_SUNO_LIBRARY_ROOT`.
 - External lyric roots used by default:
-  - `/Users/calderwong/Desktop/Hapa Song Lyrics`
-  - `/Users/calderwong/Desktop/Hapa Song Library`
+  - `$HAPA_SONG_LYRICS_ROOT`
+  - `$HAPA_SONG_LIBRARY_ROOT`
 - Existing timing cache: `data/lyric_timings/*.json`.
 
 ## Outputs and local state
@@ -47,7 +47,7 @@ The app does not define an HTTP port. It runs as an Electron desktop window via 
 ## Run
 
 ```bash
-cd /Users/calderwong/Desktop/hapa-song-registry
+cd "$HAPA_SONG_REGISTRY_ROOT"
 npm install
 python3 -m pip install -r requirements.txt
 npm start
@@ -56,7 +56,7 @@ npm start
 ## Rebuild telemetry registry
 
 ```bash
-cd /Users/calderwong/Desktop/hapa-song-registry
+cd "$HAPA_SONG_REGISTRY_ROOT"
 npm run ingest
 npm run check
 ```
@@ -66,7 +66,7 @@ npm run check
 ## Analyze lyric timings
 
 ```bash
-cd /Users/calderwong/Desktop/hapa-song-registry
+cd "$HAPA_SONG_REGISTRY_ROOT"
 npm run analyze-lyrics
 npm run check
 ```
@@ -114,7 +114,7 @@ Bananas attribution option: contributors may opt into Bananas work-contribution 
 
 ## Notes and risks
 
-- Registry data contains local filesystem paths and generated music metadata. Treat `data/` outputs as local operational state unless intentionally publishing a sanitized snapshot.
+- Registry data may contain local filesystem paths and generated music metadata. Treat `data/` outputs as local operational state unless intentionally publishing a sanitized snapshot.
 - Lyric timing is generated offline from local audio. The analyzer uses purchased/generated Vocals stems when available and falls back to the full mix otherwise. These are phrase-level, audio-derived timings rather than word-level forced alignment; songs with dense mixes or ad-libbed/generated vocals may still be approximate.
 - Stem playback and DAW engine behavior depend on browser/Electron Web Audio support and readable local audio paths.
 
@@ -138,7 +138,7 @@ Local registry for Hapa songs, Suno/imported audio assets, lyrics, prompts, timi
 ### Current status
 
 - Status: **active music registry**.
-- Local source root: `/Users/calderwong/Desktop/hapa-song-registry`.
+- Local source root: `$HAPA_SONG_REGISTRY_ROOT`.
 - This README is intended to be useful to both human operators and future agents: it should explain what the node is for, what it consumes, what it emits, how it connects to other Hapa nodes, and what should stay out of git.
 
 ### Inputs
@@ -157,16 +157,16 @@ Local registry for Hapa songs, Suno/imported audio assets, lyrics, prompts, timi
 
 ### Related Hapa nodes
 
-- [Hapa AG / Dev Proto](file:///Users/calderwong/Desktop/hapa-dev-proto) — Primary local-first app; many nodes feed it cards, assets, chat, debug, or projection data.
-- [Hapa Worldbuilding Wiki](file:///Users/calderwong/Desktop/Hapa_Worldbuilding_Wiki) — Canonical Markdown graph for lore, nodes, names, cards, systems, and provenance.
-- [Overwatch](file:///Users/calderwong/Desktop/.Overwatch) — Operations map: inventory, source index, task inbox, protocols, and runbooks.
-- [Hapa Telemetry Node](file:///Users/calderwong/Desktop/hapa-telemetry-node) — Discovery/monitoring hub for node health, capabilities, launchers, and relationships.
-- [Hapa Keys Node](file:///Users/calderwong/Desktop/hapa-keys-node) — Local key vault used by authenticated nodes and tools.
-- [Hapa Lore Node](file:///Users/calderwong/Desktop/hapa-lore-node) — Chronicle/canon service for daily progress, lore, and searchable wisdom.
-- [Hapa Anvil Node](file:///Users/calderwong/Desktop/hapa-anvil-node) — Card standardization/evaluation/forge node for turning raw card ideas into usable artifacts.
-- [Hapa Janus World Node](file:///Users/calderwong/Desktop/hapa-janus-world-node) — World-state truth kernel and event tape for Janus/desktop simulation work.
-- [Hapa MLX Station](file:///Users/calderwong/hapa-mlx-station) — Apple Silicon media-generation station that produces visual/audio assets for cards, wiki, and production runs.
-- [Hapa Lance Node](file:///Users/calderwong/Desktop/hapa-lance-node) — Local indexing/projection layer for cards, wiki chunks, embeddings, and multimodal records.
+- `hapa-dev-proto` — Primary local-first app; many nodes feed it cards, assets, chat, debug, or projection data.
+- `Hapa_Worldbuilding_Wiki` — Canonical Markdown graph for lore, nodes, names, cards, systems, and provenance.
+- `.Overwatch` — Operations map: inventory, source index, task inbox, protocols, and runbooks.
+- `hapa-telemetry-node` — Discovery/monitoring hub for node health, capabilities, launchers, and relationships.
+- `hapa-keys-node` — Local key vault used by authenticated nodes and tools.
+- `hapa-lore-node` — Chronicle/canon service for daily progress, lore, and searchable wisdom.
+- `hapa-anvil-node` — Card standardization/evaluation/forge node for turning raw card ideas into usable artifacts.
+- `hapa-janus-world-node` — World-state truth kernel and event tape for Janus/desktop simulation work.
+- `hapa-mlx-station` — Apple Silicon media-generation station that produces visual/audio assets for cards, wiki, and production runs.
+- `hapa-lance-node` — Local indexing/projection layer for cards, wiki chunks, embeddings, and multimodal records.
 
 ### Operating contract
 

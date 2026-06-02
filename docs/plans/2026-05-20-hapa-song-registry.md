@@ -2,7 +2,7 @@
 
 Goal: Build a local Electron desktop app that turns the downloaded Suno library into a searchable, playable Hapa Music Library with telemetry, grouping, similarity, variations, stems, lyrics, and creative visualization.
 
-Architecture: A Python ingestion pipeline reads `/Users/calderwong/Desktop/suno-library/suno_library_metadata.json`, discovers local song/stem audio files, extracts normalized telemetry, computes heuristic facets and relationships, persists to SQLite plus a JSON application cache, and the Electron app loads the registry through IPC. The renderer is a vanilla HTML/CSS/JS app using Web Audio APIs for playback, stem toggles, approximate lyric following, and canvas visualizations.
+Architecture: A Python ingestion pipeline reads `$HAPA_SUNO_LIBRARY_ROOT/suno_library_metadata.json`, discovers local song/stem audio files, extracts normalized telemetry, computes heuristic facets and relationships, persists to SQLite plus a JSON application cache, and the Electron app loads the registry through IPC. The renderer is a vanilla HTML/CSS/JS app using Web Audio APIs for playback, stem toggles, approximate lyric following, and canvas visualizations.
 
 Tech Stack: Python 3.9, SQLite 3, Node 25, Electron, vanilla JavaScript, Web Audio API.
 

@@ -5,6 +5,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' file: data: https:; media-src 'self' file: https: blob:;" />
   <title>Hapa Song Registry</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="astros-hapa.css" />
 </head>
 <body>
   <div id="app">
@@ -80,6 +81,7 @@
           <p id="subtitle">Lyric masters, variations, first-class stems, loops, mixer, ancestry, and append-only metadata</p>
         </div>
         <div class="top-actions">
+          <button id="soundToggle" class="sound-toggle" type="button" aria-pressed="false">SFX ON</button>
           <button id="openData">Open data folder</button>
           <button id="showFile">Show current file</button>
         </div>
@@ -165,5 +167,49 @@
   <audio id="mainAudio" crossorigin="anonymous"></audio>
   <script src="daw-engine.js"></script>
   <script src="renderer.js"></script>
+
+  <script data-hapa-kanban-ingress="hapa-app-hapa-song-registry">
+    (function () {
+      var projectId = 'hapa-app-hapa-song-registry';
+      var boardUrl = 'http://127.0.0.1:5181/?project=' + encodeURIComponent(projectId);
+      function mountKanbanIngress() {
+        if (!document.body || document.querySelector('[data-hapa-kanban-link="' + projectId + '"]')) return;
+        var link = document.createElement('a');
+        link.href = boardUrl;
+        link.target = '_blank';
+        link.rel = 'noreferrer';
+        link.textContent = 'Kanban';
+        link.className = 'hapa-kanban-ingress';
+        link.dataset.hapaKanbanLink = projectId;
+        link.setAttribute('aria-label', 'Open Overwatch Kanban board for ' + projectId);
+        Object.assign(link.style, {
+          position: 'fixed',
+          right: '16px',
+          bottom: '16px',
+          zIndex: '2147483000',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '38px',
+          padding: '0 14px',
+          border: '1px solid rgba(55, 215, 255, 0.55)',
+          borderRadius: '8px',
+          background: 'rgba(2, 6, 23, 0.92)',
+          color: '#dffbff',
+          font: '700 12px/1.1 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+          letterSpacing: '0',
+          textDecoration: 'none',
+          boxShadow: '0 0 18px rgba(55, 215, 255, 0.22)',
+          backdropFilter: 'blur(10px)'
+        });
+        document.body.appendChild(link);
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', mountKanbanIngress, { once: true });
+      } else {
+        mountKanbanIngress();
+      }
+    }());
+  </script>
 </body>
 </html>

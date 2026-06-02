@@ -28,8 +28,8 @@
 
 ## Residue
 
-- Repo path: `/Users/calderwong/Desktop/hapa-song-registry`.
-- Wiki page: `/Users/calderwong/Desktop/Hapa_Worldbuilding_Wiki/Nodes/Existing/hapa-song-registry.md`.
+- Repo path: `$HAPA_SONG_REGISTRY_ROOT`.
+- Wiki page: `Hapa_Worldbuilding_Wiki/Nodes/Existing/hapa-song-registry.md`.
 - Core commands: `npm start`, `npm test`, `npm run ingest`, `npm run check`, `npm run analyze-lyrics`.
 - Python dependency install: `python3 -m pip install -r requirements.txt`.
 - Main data outputs: `data/registry.json`, `data/hapa_registry.sqlite`, `data/lyric_timings/*.json`.

@@ -13,7 +13,15 @@
     "ingest": "python3 scripts/ingest_suno.py",
     "verify": "python3 scripts/verify_registry.py",
     "check": "node --check src/main.js && node --check src/preload.js && node --check src/daw-engine.js && node --check src/renderer.js && python3 scripts/verify_registry.py",
-    "analyze-lyrics": "python3 scripts/analyze_lyric_timing.py --workers 8"
+    "analyze-lyrics": "python3 scripts/analyze_lyric_timing.py --workers 8",
+    "audio:telemetry": "python3 scripts/audio_telemetry.py",
+    "audio:telemetry:enqueue": "python3 scripts/audio_telemetry.py enqueue",
+    "audio:telemetry:worker": "python3 scripts/audio_telemetry.py worker --limit 10",
+    "ace:queue": "python3 scripts/ace_stem_queue.py queue --replace",
+    "ace:serve": "python3 scripts/ace_stem_queue.py serve --port 8797 --open",
+    "ace:start": "python3 scripts/ace_stem_queue.py start",
+    "ace:pause": "python3 scripts/ace_stem_queue.py pause",
+    "ace:stop": "python3 scripts/ace_stem_queue.py stop"
   },
   "keywords": [],
   "author": "Hapa.ai / Calder Wong",

@@ -8,4 +8,7 @@ contextBridge.exposeInMainWorld('hapa', {
   fileUrl: (filePath) => ipcRenderer.invoke('path:fileUrl', filePath),
   showInFolder: (filePath) => ipcRenderer.invoke('path:show', filePath),
   openDataFolder: () => ipcRenderer.invoke('app:openDataFolder'),
+  loadAudioTelemetry: (songId) => ipcRenderer.invoke('audioTelemetry:load', songId),
+  analyzeAudioTelemetry: (songId) => ipcRenderer.invoke('audioTelemetry:analyze', songId),
+  audioTelemetryQueueStatus: () => ipcRenderer.invoke('audioTelemetry:queueStatus'),
 });

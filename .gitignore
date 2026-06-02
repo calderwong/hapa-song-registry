@@ -23,6 +23,9 @@ data/registry.json
 data/history_events.json
 data/lyric_timings/
 data/derivatives/
+data/audio_telemetry/
+data/ace-stem-queue/
+data/ace-stems/
 
 # Python caches
 __pycache__/
@@ -33,3 +36,29 @@ __pycache__/
 dist/
 build/
 coverage/
+# Hapa GitHub safety: local secrets, credentials, dependencies, generated sidecars
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+.node_token
+.auth_token
+.api_token
+*.pem
+*.key
+*.p8
+*.p12
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+*credentials.json
+*secrets.json
+.venv/
+venv/
+*.pyc
+*.sqlite-wal
+*.sqlite-shm
+*.db-wal
+*.db-shm

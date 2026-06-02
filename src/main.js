@@ -8,6 +8,7 @@ const DATA_DIR = path.join(ROOT, 'data');
 const DATA_PATH = path.join(DATA_DIR, 'registry.json');
 const HISTORY_PATH = path.join(DATA_DIR, 'history_events.json');
 const DERIVATIVE_DIR = path.join(DATA_DIR, 'derivatives');
+const AUDIO_TELEMETRY_DIR = path.join(DATA_DIR, 'audio_telemetry');
 
 function ensureDataFiles() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -59,6 +60,21 @@ function runFfmpeg(args) {
   });
 }
 
+function runPythonScript(script, args = []) {
+  return new Promise((resolve, reject) => {
+    const child = spawn('python3', [path.join(ROOT, 'scripts', script), ...args], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+    let stdout = '', stderr = '';
+    child.stdout.on('data', (buf) => { stdout += buf.toString(); });
+    child.stderr.on('data', (buf) => { stderr += buf.toString(); });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code !== 0) return reject(new Error(stderr || stdout || `python exited with code ${code}`));
+      try { resolve(stdout.trim() ? JSON.parse(stdout) : {}); }
+      catch (err) { reject(new Error(`Failed to parse ${script} output: ${err.message}\n${stdout}\n${stderr}`)); }
+    });
+  });
+}
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1650,
@@ -85,6 +101,19 @@ ipcMain.handle('registry:load', async () => {
 });
 
 ipcMain.handle('history:append', async (_event, event) => appendHistoryEvent(event || {}));
+
+ipcMain.handle('audioTelemetry:load', async (_event, songId) => {
+  ensureDataFiles();
+  if (!songId) return null;
+  return readJsonSafe(path.join(AUDIO_TELEMETRY_DIR, 'latest', `${songId}.json`), null);
+});
+
+ipcMain.handle('audioTelemetry:analyze', async (_event, songId) => {
+  if (!songId) throw new Error('Missing song id.');
+  return runPythonScript('audio_telemetry.py', ['analyze', songId, '--overwrite']);
+});
+
+ipcMain.handle('audioTelemetry:queueStatus', async () => readJsonSafe(path.join(AUDIO_TELEMETRY_DIR, 'queue.json'), { queue: [], telemetry: {} }));
 
 ipcMain.handle('audio:createClip', async (_event, payload = {}) => {
   const input = payload.inputPath;
