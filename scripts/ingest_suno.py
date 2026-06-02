@@ -12,9 +12,12 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from html import unescape
 
-DEFAULT_LIBRARY = pathlib.Path.home() / 'Desktop' / 'suno-library'
 DEFAULT_PROJECT = pathlib.Path(__file__).resolve().parents[1]
-DEFAULT_LYRIC_ROOTS = [pathlib.Path.home() / 'Desktop' / 'Hapa Song Lyrics', pathlib.Path.home() / 'Desktop' / 'Hapa Song Library']
+DEFAULT_LIBRARY = pathlib.Path(os.environ.get('HAPA_SUNO_LIBRARY_ROOT', DEFAULT_PROJECT / 'data' / 'imports' / 'suno-library'))
+DEFAULT_LYRIC_ROOTS = [
+    pathlib.Path(os.environ.get('HAPA_SONG_LYRICS_ROOT', DEFAULT_PROJECT / 'data' / 'imports' / 'song-lyrics')),
+    pathlib.Path(os.environ.get('HAPA_SONG_LIBRARY_ROOT', DEFAULT_PROJECT / 'data' / 'imports' / 'song-library')),
+]
 DEFAULT_AUTHORS = ['Calder', 'Waldercong', 'DeadpanDecoders95']
 STOPWORDS = set('a an and are as at be because but by for from has have i in into is it its just let like me my no not of on or our so the to we when with you your was were will every this that through'.split())
 
@@ -657,7 +660,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--library', default=str(DEFAULT_LIBRARY))
     parser.add_argument('--project', default=str(DEFAULT_PROJECT))
-    parser.add_argument('--lyrics-root', action='append', dest='lyric_roots', help='External lyric folder (.md/.docx). May be repeated. Defaults to Desktop/Hapa Song Lyrics and Desktop/Hapa Song Library.')
+    parser.add_argument('--lyrics-root', action='append', dest='lyric_roots', help='External lyric folder (.md/.docx). May be repeated. Defaults to configured Hapa song lyric/library roots.')
     args = parser.parse_args()
     registry = build_registry(args.library, args.project, lyric_roots=args.lyric_roots)
     json_path, db_path = write_outputs(registry, args.project)
