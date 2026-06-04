@@ -131,6 +131,9 @@ Hapa Song Registry static-file fallback; Electron preload is required for the fu
 
 ## Hapa ecosystem context
 
+<p>
+  <img src="docs/assets/hapa-ecosystem-context/overview.jpg" alt="Hapa ecosystem context visual showing modular nodes, human and AI-agent interfaces, Hapa Cards, avatar-agents, Second Brain, and wiki enrichment loop" width="100%">
+</p>
 
 ### Shared ecosystem pattern
 
