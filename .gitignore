@@ -26,6 +26,8 @@ data/derivatives/
 data/audio_telemetry/
 data/ace-stem-queue/
 data/ace-stems/
+data/backups/
+graphify-out/
 
 # Python caches
 __pycache__/

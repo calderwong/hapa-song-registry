@@ -1,0 +1,13 @@
+{
+  "node_type": "hapa-song-registry",
+  "display_name": "Hapa Song Registry",
+  "description": "Local Electron music/stem registry with optional loopback API, Web Audio workbench, lyric timing, and provenance-preserving registry data.",
+  "default_port": 8798,
+  "auth_type": "loopback_local_session",
+  "launch_config": {"command": "npm start", "cwd": "${HAPA_NODE_ROOT}", "api_command": "npm run api"},
+  "capabilities": ["song-registry", "stem-registry", "lyric-timing", "daw-playback", "audio-serving", "music-provenance"],
+  "endpoints": {"health": "/api/health", "songs": "/api/songs", "song": "/api/songs/:id", "audio": "/api/audio/:id", "cover": "/api/covers/:id"},
+  "ui": {"desktop": "npm start", "entry": "src/index.html", "renderer": "src/renderer.js"},
+  "parity": {"api": true, "cli": false, "ui": true, "scope": "Optional loopback API and Electron UI are verified surfaces. A stable node CLI remains a Wave 2 gap; generated registry/audio data stays local."},
+  "docs": {"readme": "README.md", "agents": "AGENTS.md", "interfaces": "docs/INTERFACES.md"}
+}

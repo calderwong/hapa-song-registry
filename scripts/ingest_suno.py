@@ -19,6 +19,7 @@ DEFAULT_LYRIC_ROOTS = [
     pathlib.Path(os.environ.get('HAPA_SONG_LIBRARY_ROOT', DEFAULT_PROJECT / 'data' / 'imports' / 'song-library')),
 ]
 DEFAULT_AUTHORS = ['Calder', 'Waldercong', 'DeadpanDecoders95']
+AUDIO_SUFFIXES = ('.mp3', '.m4a', '.wav', '.webm', '.ogg', '.flac', '.aac')
 STOPWORDS = set('a an and are as at be because but by for from has have i in into is it its just let like me my no not of on or our so the to we when with you your was were will every this that through'.split())
 
 THEME_WORDS = {
@@ -259,12 +260,139 @@ def has_audio(clip):
     return bool(clip.get('audio_url') or any((i.get('url') and i.get('delivery') in (None, 'progressive')) for i in (clip.get('media_urls') or [])))
 
 
-def find_audio_file(root, clip_id):
+def read_json_file(path, fallback=None):
+    try:
+        return json.loads(pathlib.Path(path).read_text(encoding='utf-8'))
+    except Exception:
+        return fallback
+
+
+def discover_playlist_export_clips(library_root):
+    """Load Suno playlist-export folders whose final mixes are saved as song.mp3."""
+    library_root = pathlib.Path(library_root)
+    playlist_root = library_root / 'playlists'
+    if not playlist_root.exists():
+        return []
+    clips_by_id = {}
+    for song_dir in sorted(playlist_root.glob('*/songs/*')):
+        if not song_dir.is_dir():
+            continue
+        metadata_path = song_dir / 'metadata.json'
+        clip = read_json_file(metadata_path)
+        if not isinstance(clip, dict) or not clip.get('id'):
+            continue
+        song_path = first_audio_file(song_dir, preferred_stem='song')
+        clip = with_export_fields(clip, song_dir=song_dir, local_path=song_path, kind='song')
+        clips_by_id[clip['id']] = merge_clip(clips_by_id.get(clip['id'], {}), clip)
+
+        for stem_clip in discover_playlist_export_stems(song_dir, clip):
+            clips_by_id[stem_clip['id']] = merge_clip(clips_by_id.get(stem_clip['id'], {}), stem_clip)
+    return list(clips_by_id.values())
+
+
+def discover_playlist_export_stems(song_dir, parent_clip):
+    stems = []
+    stem_docs = []
+    all_stems = read_json_file(song_dir / 'all-stems.metadata.json', [])
+    if isinstance(all_stems, list):
+        stem_docs.extend(item for item in all_stems if isinstance(item, dict))
+    stems_dir = song_dir / 'stems'
+    if stems_dir.exists():
+        for metadata_path in sorted(stems_dir.glob('*.metadata.json')):
+            doc = read_json_file(metadata_path)
+            if isinstance(doc, dict):
+                stem_docs.append(doc)
+
+    seen = set()
+    for stem in stem_docs:
+        stem_id = stem.get('id')
+        if not stem_id or stem_id in seen:
+            continue
+        seen.add(stem_id)
+        stem_path = first_audio_file(stems_dir, id_prefix=stem_id[:8]) if stems_dir.exists() else None
+        stem = with_export_fields(stem, song_dir=song_dir, local_path=stem_path, kind='stem')
+        stem.setdefault('metadata', {})
+        stem['metadata'].setdefault('stem_from_id', parent_clip.get('id'))
+        stem['metadata'].setdefault('stem_type_group_name', infer_stem_type(stem.get('title') or (stem_path.name if stem_path else 'Stem')))
+        stem['metadata'].setdefault('stem_task', stem['metadata'].get('stem_type_group_name'))
+        stems.append(stem)
+    return stems
+
+
+def with_export_fields(clip, song_dir, local_path=None, kind='song'):
+    clip = dict(clip)
+    if local_path:
+        clip['_hapaLocalPath'] = str(local_path)
+    clip['_hapaPlaylistExport'] = {
+        'kind': kind,
+        'songDir': str(song_dir),
+        'lyricsPath': str(song_dir / 'lyrics.txt') if (song_dir / 'lyrics.txt').exists() else None,
+        'stylePath': str(song_dir / 'style.txt') if (song_dir / 'style.txt').exists() else None,
+        'coverPath': str(first_existing(song_dir, ['cover.jpeg', 'cover.jpg', 'cover.png']) or ''),
+        'lyricTimingPath': str(first_existing(song_dir, ['lyric-timing.json', 'lyric-timing.stt.json']) or ''),
+    }
+    return clip
+
+
+def merge_clip(base, incoming):
+    merged = dict(base or {})
+    merged.update(incoming or {})
+    metadata = {}
+    metadata.update((base or {}).get('metadata') or {})
+    metadata.update((incoming or {}).get('metadata') or {})
+    if metadata:
+        merged['metadata'] = metadata
+    return merged
+
+
+def first_existing(root, names):
+    for name in names:
+        candidate = pathlib.Path(root) / name
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def first_audio_file(root, preferred_stem=None, id_prefix=None):
+    root = pathlib.Path(root)
+    if not root.exists():
+        return None
+    candidates = []
+    for path in sorted(root.glob('*')):
+        if not path.is_file() or path.name.endswith('.part') or path.suffix.lower() not in AUDIO_SUFFIXES:
+            continue
+        if preferred_stem and path.stem == preferred_stem:
+            return path
+        if id_prefix and id_prefix in path.stem:
+            candidates.append(path)
+        elif not id_prefix:
+            candidates.append(path)
+    return candidates[0] if candidates else None
+
+
+def infer_stem_type(value):
+    match = re.search(r'\((Vocals|Backing Vocals|Drums|Bass|Guitar|Keyboard|Percussion|Strings|Synth|FX|Brass|Woodwinds)\)', value or '', flags=re.I)
+    if match:
+        return safe_name(match.group(1))
+    match = re.search(r'-\s*(Vocals|Backing Vocals|Drums|Bass|Guitar|Keyboard|Percussion|Strings|Synth|FX|Brass|Woodwinds)\s*-', value or '', flags=re.I)
+    return safe_name(match.group(1) if match else 'Stem')
+
+
+def find_audio_file(root, clip_id, clip=None):
+    exported = (clip or {}).get('_hapaLocalPath')
+    if exported and pathlib.Path(exported).is_file():
+        return str(pathlib.Path(exported))
     prefix = (clip_id or '')[:8]
     if not prefix:
         return None
-    for pattern in [f'* - {prefix}.*', f'*/* - {prefix}.*', f'*/*/* - {prefix}.*']:
-        matches = [p for p in pathlib.Path(root).glob(pattern) if p.is_file() and not p.name.endswith('.part') and p.suffix.lower() in ('.mp3', '.m4a', '.wav', '.webm', '.ogg', '.flac', '.aac')]
+    for pattern in [
+        f'* - {prefix}.*',
+        f'*/* - {prefix}.*',
+        f'*/*/* - {prefix}.*',
+        f'playlists/*/songs/* - {prefix}/song.*',
+        f'playlists/*/songs/*/stems/* - {prefix}.*',
+    ]:
+        matches = [p for p in pathlib.Path(root).glob(pattern) if p.is_file() and not p.name.endswith('.part') and p.suffix.lower() in AUDIO_SUFFIXES]
         if matches:
             return str(matches[0])
     return None
@@ -330,7 +458,15 @@ def build_registry(library_root=DEFAULT_LIBRARY, project_root=DEFAULT_PROJECT, l
     library_root = pathlib.Path(library_root)
     project_root = pathlib.Path(project_root)
     metadata_path = library_root / 'suno_library_metadata.json'
-    raw_clips = json.loads(metadata_path.read_text())
+    raw_clips = json.loads(metadata_path.read_text()) if metadata_path.exists() else []
+    clips_by_id = {}
+    for clip in raw_clips:
+        if isinstance(clip, dict) and clip.get('id'):
+            clips_by_id[clip['id']] = merge_clip(clips_by_id.get(clip['id'], {}), clip)
+    for clip in discover_playlist_export_clips(library_root):
+        if isinstance(clip, dict) and clip.get('id'):
+            clips_by_id[clip['id']] = merge_clip(clips_by_id.get(clip['id'], {}), clip)
+    raw_clips = list(clips_by_id.values())
     songs = []
     stems = []
     song_by_id = {}
@@ -356,7 +492,14 @@ def build_registry(library_root=DEFAULT_LIBRARY, project_root=DEFAULT_PROJECT, l
             'settings': {k: v for k, v in m.items() if k not in ('prompt', 'tags', 'history')},
             'raw': clip,
         }
-        base['localPath'] = find_audio_file(library_root, base['id'])
+        base['localPath'] = find_audio_file(library_root, base['id'], clip)
+        export = clip.get('_hapaPlaylistExport') or {}
+        timing_path = export.get('lyricTimingPath')
+        if timing_path and pathlib.Path(timing_path).exists():
+            timing = read_json_file(timing_path)
+            if isinstance(timing, dict):
+                timing.setdefault('sourcePath', timing_path)
+                base['lyricTiming'] = timing
         base['lyricsFingerprint'] = fingerprint(base['lyrics'])
         base['stylePrompt'] = style_prompt_for_clip(clip)
         base['stylePromptFingerprint'] = fingerprint(base['stylePrompt'])
@@ -365,6 +508,8 @@ def build_registry(library_root=DEFAULT_LIBRARY, project_root=DEFAULT_PROJECT, l
         base['isMashup'] = is_mashup(clip)
         base['mashupSourceIds'] = mashup_source_ids(clip)
         if is_stem(clip):
+            if not base.get('localPath'):
+                continue
             base['parentId'] = parent_id_for_stem(clip)
             base['stemType'] = stem_group(clip)
             stems.append(base)
@@ -383,7 +528,8 @@ def build_registry(library_root=DEFAULT_LIBRARY, project_root=DEFAULT_PROJECT, l
     external_lyrics = discover_external_lyrics(lyric_roots)
     lyric_masters = build_lyric_masters(songs, stems, external_lyrics)
     prompt_groups = build_prompt_groups(songs, lyric_masters)
-    lyric_timing_count = load_existing_lyric_timings(project_root, songs)
+    load_existing_lyric_timings(project_root, songs)
+    lyric_timing_count = sum(1 for s in songs if s.get('lyricTiming'))
     audio_telemetry_count = load_existing_audio_telemetry(project_root, songs)
     groups = build_groups(songs, stems_by_parent)
     similarities = build_similarities(songs)

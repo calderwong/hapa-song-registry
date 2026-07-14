@@ -6,27 +6,27 @@ Global wiki link: `../Hapa_Worldbuilding_Wiki/Nodes/Existing/hapa-song-registry.
 
 ## Verified current state
 
-Verified from repository files and `data/registry.json` during the 2026-05-21 docs/licensing sweep:
+Verified from repository files and `data/registry.json` during the 2026-06-19 Dear Papa API pass:
 
 - App shell: Electron + vanilla HTML/CSS/JS (`src/main.js`, `src/preload.js`, `src/index.html`, `src/renderer.js`).
 - DAW/stem engine: Web Audio shared-clock multitrack engine in `src/daw-engine.js`.
 - Ingestion pipeline: Python scripts under `scripts/` build and verify registry data.
 - Test suite: Python `unittest` tests under `test/`.
 - Current registry counts in `data/registry.json`:
-  - 1,461 songs
-  - 4,476 stems
-  - 638 lyric/similarity groups
+  - 2,027 songs
+  - 5,112 stems
+  - 880 lyric/similarity groups
   - 5,000 similarity links
-  - 3 external lyric documents
-  - 206 lyric masters
-  - 651 prompt groups
-  - 98 mashups
-  - 1,192 songs with lyric timings
+  - 0 external lyric documents
+  - 270 lyric masters
+  - 874 prompt groups
+  - 202 mashups
+  - 1,217 songs with lyric timings
 
 ## Inputs
 
 - Suno telemetry export: `$HAPA_SUNO_LIBRARY_ROOT/suno_library_metadata.json`.
-- Local audio files discovered below `$HAPA_SUNO_LIBRARY_ROOT`.
+- Local audio files discovered below `$HAPA_SUNO_LIBRARY_ROOT`, including playlist exports such as `playlists/<playlist-id>/songs/<track>/song.mp3`.
 - External lyric roots used by default:
   - `$HAPA_SONG_LYRICS_ROOT`
   - `$HAPA_SONG_LIBRARY_ROOT`
@@ -42,7 +42,7 @@ Generated/updated outputs are local runtime artifacts, not network services:
 - Runtime event/history log: `data/history_events.json`.
 - Optional loop/mix derivatives: `data/derivatives/`.
 
-The app does not define an HTTP port. It runs as an Electron desktop window via `npm start`. No repository-local authentication layer was found; access is the local user/session boundary plus local filesystem permissions.
+The app runs as an Electron desktop window via `npm start`, and now also exposes an optional loopback API on `127.0.0.1:8798` via `npm run api` or Electron startup. No repository-local authentication layer was found; access is the local user/session boundary plus local filesystem permissions, so keep it loopback-only unless an operator adds auth.
 
 ## Run
 
@@ -52,6 +52,21 @@ npm install
 python3 -m pip install -r requirements.txt
 npm start
 ```
+
+## Run local Song Registry API
+
+```bash
+cd "$HAPA_SONG_REGISTRY_ROOT"
+npm run api
+```
+
+Useful loopback routes:
+
+- `GET /api/health`
+- `GET /api/songs?collection=dear-papa&limit=500`
+- `GET /api/songs/:id`
+- `GET /api/audio/:id` with byte-range support for real full-mix playback
+- `GET /api/covers/:id`
 
 ## Rebuild telemetry registry
 
@@ -90,6 +105,7 @@ npm run check
 - Filter by theme, instrument, mood, message, model, audio/stem presence, prompt group, mashup/non-mashup, and variation range.
 - Sort by newest, oldest, title, duration, stem count, variation count, and model.
 - Play local song audio and queue filtered songs as a playlist.
+- Serve local song audio to sibling Hapa apps through the loopback API.
 - View normalized telemetry and raw Suno metadata.
 - View prompt, lyrics with audio-analyzed timestamps, style tags, settings, model, duration, local paths, and URLs.
 - See groups, prompt groups, mashups, and similarity/variation links.
