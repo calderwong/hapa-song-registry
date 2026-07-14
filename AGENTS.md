@@ -47,3 +47,13 @@ npm run api
 ```
 
 Before public release, inspect `data/`, audio paths, lyric roots, and generated derivatives for private or heavy assets.
+
+
+## New Application Build Gate
+
+Whenever an agent picks up, resumes, or receives a handoff for a new application build task, it MUST complete this gate before implementation:
+
+1. Re-read `$HAPA_FRONT_DOOR_ROOT/docs/HAPA_PROTOCOL_STANDARDS.md` on every pickup, resume, or handoff; a prior task review does not carry forward.
+2. Confirm the intended app root and repository boundary. Every new standalone app MUST be initialized as its own Git repository before implementation files are created. If the app intentionally belongs in a monorepo, verify that the app path is tracked by that repository before implementation; do not create an accidental nested repository.
+3. Inspect `git status --short --branch`, then establish or update the app README and `AGENTS.md` so Hapa standards remain visible inside the repository.
+4. Record the standards review and verified repository root in the task, handoff, session note, or append-only board evidence.
