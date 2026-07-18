@@ -1,5 +1,15 @@
 # Hapa Song Registry
 
+<!-- HAPA_ECOSYSTEM_CONTEXT_START -->
+## Hapa ecosystem context
+
+Unless this repository explicitly declares a narrower, evidence-backed maturity for a particular capability, treat its Hapa-facing work as **First Pass / Prototype Stage**. Interfaces and workflows may change. There is no general promise of stability, compatibility, uptime, production support, or fitness for a particular use. A label such as **Core** describes current ecosystem importance, not production readiness; a declared release, verified state, MVP, scaffold, or archive status applies only to the named surface and supporting evidence.
+
+Use Hapa as an artist kit. Apps and nodes are work surfaces or specialized paints; Cards and Decks are reusable swatches, recipes, constraints, and remembered techniques; agents are paintbrushes that apply and combine them; Hapa protocols keep the canvas attributable, bounded, and reversible. Start from the closest existing app, Card, agent pattern, or protocol as a **jump-off point**, adapt that pre-existing wisdom to the new problem, verify the result, and preserve source ownership, custody, licenses, attribution, and lineage.
+
+Calder welcomes **for-profit and nonprofit teams and organizations** to suggest a clearly attributed ecosystem presence, service integration, public-interest pilot, connector, Card/Deck, agent route, or future decentralized-commerce experiment. This is an open invitation to explore, not a promise of partnership, acceptance, compatibility, decentralization, funding, commerce capability, or commercial outcome. Canonical guidance: `$HAPA_FRONT_DOOR_ROOT/docs/ECOSYSTEM_STAGE_AND_PARTICIPATION.md` ([public copy](https://github.com/calderwong/hapa/blob/main/docs/ECOSYSTEM_STAGE_AND_PARTICIPATION.md)).
+<!-- HAPA_ECOSYSTEM_CONTEXT_END -->
+
 Hapa Song Registry is a local Electron desktop app for browsing, validating, and playing the downloaded Suno/Hapa music library. In the Hapa node ecosystem it acts as the music/stem registry node: it turns local Suno exports and Hapa lyric documents into searchable song, stem, lyric, prompt, timing, and DAW-workstation surfaces for later canon, media, and attribution workflows.
 
 Global wiki link: `../Hapa_Worldbuilding_Wiki/Nodes/Existing/hapa-song-registry.md` (`[[Nodes/Existing/hapa-song-registry]]`).
