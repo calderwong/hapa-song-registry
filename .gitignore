@@ -20,6 +20,7 @@ data/launcher.log
 data/*.sqlite
 data/*.sqlite-*
 data/registry.json
+data/supplemental-songs.local.json
 data/history_events.json
 data/lyric_timings/
 data/derivatives/

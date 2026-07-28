@@ -14,6 +14,9 @@ from html import unescape
 
 DEFAULT_PROJECT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_LIBRARY = pathlib.Path(os.environ.get('HAPA_SUNO_LIBRARY_ROOT', DEFAULT_PROJECT / 'data' / 'imports' / 'suno-library'))
+DEFAULT_SUPPLEMENTAL_IMPORTS = pathlib.Path(
+    os.environ.get('HAPA_SONG_SUPPLEMENTAL_IMPORTS', DEFAULT_PROJECT / 'data' / 'supplemental-songs.local.json')
+)
 DEFAULT_LYRIC_ROOTS = [
     pathlib.Path(os.environ.get('HAPA_SONG_LYRICS_ROOT', DEFAULT_PROJECT / 'data' / 'imports' / 'song-lyrics')),
     pathlib.Path(os.environ.get('HAPA_SONG_LIBRARY_ROOT', DEFAULT_PROJECT / 'data' / 'imports' / 'song-library')),
@@ -257,7 +260,12 @@ def parent_id_for_stem(clip):
 
 
 def has_audio(clip):
-    return bool(clip.get('audio_url') or any((i.get('url') and i.get('delivery') in (None, 'progressive')) for i in (clip.get('media_urls') or [])))
+    local_path = clip.get('_hapaLocalPath')
+    return bool(
+        (local_path and pathlib.Path(local_path).is_file())
+        or clip.get('audio_url')
+        or any((i.get('url') and i.get('delivery') in (None, 'progressive')) for i in (clip.get('media_urls') or []))
+    )
 
 
 def read_json_file(path, fallback=None):
@@ -317,6 +325,56 @@ def discover_playlist_export_stems(song_dir, parent_clip):
         stem['metadata'].setdefault('stem_task', stem['metadata'].get('stem_type_group_name'))
         stems.append(stem)
     return stems
+
+
+def discover_supplemental_import_clips(project_root, manifest_path=None):
+    """Load local, non-Suno masters without claiming playlist membership."""
+    project_root = pathlib.Path(project_root)
+    default_path = (
+        DEFAULT_SUPPLEMENTAL_IMPORTS
+        if project_root.resolve() == DEFAULT_PROJECT.resolve()
+        else project_root / 'data' / 'supplemental-songs.local.json'
+    )
+    path = pathlib.Path(manifest_path or default_path)
+    payload = read_json_file(path, {})
+    rows = payload if isinstance(payload, list) else payload.get('songs', []) if isinstance(payload, dict) else []
+    clips = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        song_id = str(row.get('id') or '').strip()
+        local_path = pathlib.Path(str(row.get('localPath') or '')).expanduser()
+        audio_url = row.get('audioUrl') or row.get('audio_url')
+        if not song_id or (not local_path.is_file() and not audio_url):
+            continue
+        metadata = dict(row.get('metadata') or {})
+        metadata.setdefault('prompt', row.get('lyrics') or row.get('prompt') or '')
+        metadata.setdefault('tags', row.get('tags') or '')
+        if row.get('duration') is not None:
+            metadata.setdefault('duration', row.get('duration'))
+        clip = {
+            'id': song_id,
+            'status': 'complete',
+            'title': row.get('title') or 'Untitled',
+            'created_at': row.get('createdAt') or row.get('created_at'),
+            'model_name': row.get('model'),
+            'major_model_version': row.get('majorModelVersion'),
+            'audio_url': audio_url,
+            'image_url': row.get('imageUrl') or row.get('image_url'),
+            'metadata': metadata,
+            '_hapaSupplementalImport': {
+                'schemaVersion': 'hapa.song-registry.supplemental-import.v1',
+                'sourceKind': row.get('sourceKind') or 'operator-local-master',
+                'sourceId': row.get('sourceId') or song_id,
+                'sourcePath': str(path),
+                'nonSunoPlaylistImport': True,
+                'note': row.get('note') or '',
+            },
+        }
+        if local_path.is_file():
+            clip['_hapaLocalPath'] = str(local_path)
+        clips.append(clip)
+    return clips
 
 
 def with_export_fields(clip, song_dir, local_path=None, kind='song'):
@@ -466,6 +524,9 @@ def build_registry(library_root=DEFAULT_LIBRARY, project_root=DEFAULT_PROJECT, l
     for clip in discover_playlist_export_clips(library_root):
         if isinstance(clip, dict) and clip.get('id'):
             clips_by_id[clip['id']] = merge_clip(clips_by_id.get(clip['id'], {}), clip)
+    for clip in discover_supplemental_import_clips(project_root):
+        if isinstance(clip, dict) and clip.get('id'):
+            clips_by_id[clip['id']] = merge_clip(clips_by_id.get(clip['id'], {}), clip)
     raw_clips = list(clips_by_id.values())
     songs = []
     stems = []
@@ -538,7 +599,7 @@ def build_registry(library_root=DEFAULT_LIBRARY, project_root=DEFAULT_PROJECT, l
         'sourceLibrary': str(library_root),
         'lyricRoots': [str(p) for p in (DEFAULT_LYRIC_ROOTS if lyric_roots is None else [pathlib.Path(p) for p in lyric_roots]) if pathlib.Path(p).exists()],
         'defaultAuthors': list(DEFAULT_AUTHORS),
-        'counts': {'songs': len(songs), 'stems': len(stems), 'groups': len(groups), 'similarities': len(similarities), 'externalLyrics': len(external_lyrics), 'lyricMasters': len(lyric_masters), 'promptGroups': len(prompt_groups), 'mashups': sum(1 for s in songs if s.get('isMashup')), 'lyricTimings': lyric_timing_count, 'audioTelemetry': audio_telemetry_count},
+        'counts': {'songs': len(songs), 'stems': len(stems), 'groups': len(groups), 'similarities': len(similarities), 'externalLyrics': len(external_lyrics), 'lyricMasters': len(lyric_masters), 'promptGroups': len(prompt_groups), 'mashups': sum(1 for s in songs if s.get('isMashup')), 'supplementalSongs': sum(1 for s in songs if s.get('raw', {}).get('_hapaSupplementalImport')), 'lyricTimings': lyric_timing_count, 'audioTelemetry': audio_telemetry_count},
         'songs': songs,
         'stems': stems,
         'externalLyrics': external_lyrics,

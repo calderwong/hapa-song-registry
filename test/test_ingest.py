@@ -50,6 +50,42 @@ class IngestHelpersTest(unittest.TestCase):
             (root / 'Song - abcdef12.mp3').write_bytes(b'abc')
             self.assertEqual(ingest.find_audio_file(root, 'abcdef12-0000'), str(root / 'Song - abcdef12.mp3'))
 
+    def test_supplemental_local_master_is_ingested_without_claiming_suno_playlist_membership(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = pathlib.Path(d)
+            library = root / 'suno'
+            project = root / 'project'
+            audio = root / 'legacy-master.mp3'
+            library.mkdir()
+            (library / 'suno_library_metadata.json').write_text('[]', encoding='utf-8')
+            audio.write_bytes(b'audio')
+            supplemental = project / 'data' / 'supplemental-songs.local.json'
+            supplemental.parent.mkdir(parents=True)
+            supplemental.write_text(json.dumps({
+                'schemaVersion': 'hapa.song-registry.supplemental-imports.v1',
+                'songs': [{
+                    'id': 'legacy-song',
+                    'title': 'Legacy Song',
+                    'localPath': str(audio),
+                    'duration': 12.5,
+                    'lyrics': '[Verse]\nA preserved lyric',
+                    'sourceKind': 'builder-song-card',
+                    'sourceId': 'legacy-card',
+                }],
+            }), encoding='utf-8')
+
+            registry = ingest.build_registry(library, project_root=project, lyric_roots=[])
+
+            self.assertEqual(registry['counts']['songs'], 1)
+            self.assertEqual(registry['counts']['supplementalSongs'], 1)
+            song = registry['songs'][0]
+            self.assertEqual(song['id'], 'legacy-song')
+            self.assertEqual(song['localPath'], str(audio))
+            self.assertEqual(song['lyrics'], 'A preserved lyric')
+            provenance = song['raw']['_hapaSupplementalImport']
+            self.assertTrue(provenance['nonSunoPlaylistImport'])
+            self.assertEqual(provenance['sourceKind'], 'builder-song-card')
+
     def test_external_markdown_and_docx_lyrics_are_ingested_and_deduped_with_suno(self):
         with tempfile.TemporaryDirectory() as d:
             root = pathlib.Path(d)

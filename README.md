@@ -37,6 +37,7 @@ Verified from repository files and `data/registry.json` during the 2026-06-19 De
 
 - Suno telemetry export: `$HAPA_SUNO_LIBRARY_ROOT/suno_library_metadata.json`.
 - Local audio files discovered below `$HAPA_SUNO_LIBRARY_ROOT`, including playlist exports such as `playlists/<playlist-id>/songs/<track>/song.mp3`.
+- Optional non-Suno local masters: `data/supplemental-songs.local.json` (or `$HAPA_SONG_SUPPLEMENTAL_IMPORTS`). Each entry must declare a stable `id`, readable `localPath` or `audioUrl`, title, and source lineage. These rows are labeled `nonSunoPlaylistImport` and never claim Suno playlist membership.
 - External lyric roots used by default:
   - `$HAPA_SONG_LYRICS_ROOT`
   - `$HAPA_SONG_LIBRARY_ROOT`
