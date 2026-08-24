@@ -1,6 +1,6 @@
 # Hapa Song Registry Audio Telemetry Analysis Architecture
 
-Status: proposed design
+Status: active architecture with remaining worker/queue refinements
 Repository: `$HAPA_SONG_REGISTRY_ROOT`
 Primary data root: `$HAPA_SONG_REGISTRY_ROOT/data`
 
@@ -24,6 +24,8 @@ The layer complements the existing registry outputs:
 5. Timeline events use one shared shape for hooks, peaks, beats, sections, lyric lines, drops, stems, and future annotations.
 6. Every event has provenance: source audio, analyzer version, params, content hash, timestamps, and confidence.
 7. The desktop app can work without an HTTP server, but a loopback API can expose the same read/write surfaces to agents/apps.
+8. Echo Album Director generation is downstream of a complete, hash-matched analysis receipt; metadata presence alone is not analysis.
+9. Per-song repair uses the targeted registry upsert. Whole-library JSON/SQLite rebuild is not the normal persistence path for one analysis result.
 
 ## Proposed file layout
 

@@ -12,6 +12,8 @@
     "start": "electron .",
     "api": "node src/api-server.js --port 8798",
     "ingest": "python3 scripts/ingest_suno.py",
+    "song:update": "python3 scripts/update_registry_song.py",
+    "echo:audit": "python3 scripts/audit_echo_album.py",
     "verify": "python3 scripts/verify_registry.py",
     "check": "node --check src/main.js && node --check src/preload.js && node --check src/daw-engine.js && node --check src/renderer.js && python3 scripts/verify_registry.py",
     "analyze-lyrics": "python3 scripts/analyze_lyric_timing.py --workers 8",

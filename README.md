@@ -89,6 +89,8 @@ npm run check
 
 `npm run ingest` reads the Suno export and local lyric roots, writes `data/registry.json`, and updates `data/hapa_registry.sqlite`.
 
+Do not use the full rebuild for a single exported song. The active meaning of **“Update the Echo Album”**, including mandatory MP3, WAV, stems, lyrics, measured analysis, and Director-script gates, is defined in [`docs/ECHO_ALBUM_UPDATE_CONTRACT.md`](docs/ECHO_ALBUM_UPDATE_CONTRACT.md). Use `scripts/audit_echo_album.py` for a manifest-scoped completeness report and `scripts/update_registry_song.py --song-id <id> --apply` for a targeted registry upsert. The targeted command defaults to dry-run and rejects files whose bytes are not a recognized audio container.
+
 ## Analyze lyric timings
 
 ```bash

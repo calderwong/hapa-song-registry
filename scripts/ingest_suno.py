@@ -512,25 +512,11 @@ def load_existing_audio_telemetry(project_root, songs):
     return attached
 
 
-def build_registry(library_root=DEFAULT_LIBRARY, project_root=DEFAULT_PROJECT, lyric_roots=None):
+def normalize_clips(raw_clips, library_root):
+    """Normalize already-discovered clips without scanning the whole library."""
     library_root = pathlib.Path(library_root)
-    project_root = pathlib.Path(project_root)
-    metadata_path = library_root / 'suno_library_metadata.json'
-    raw_clips = json.loads(metadata_path.read_text()) if metadata_path.exists() else []
-    clips_by_id = {}
-    for clip in raw_clips:
-        if isinstance(clip, dict) and clip.get('id'):
-            clips_by_id[clip['id']] = merge_clip(clips_by_id.get(clip['id'], {}), clip)
-    for clip in discover_playlist_export_clips(library_root):
-        if isinstance(clip, dict) and clip.get('id'):
-            clips_by_id[clip['id']] = merge_clip(clips_by_id.get(clip['id'], {}), clip)
-    for clip in discover_supplemental_import_clips(project_root):
-        if isinstance(clip, dict) and clip.get('id'):
-            clips_by_id[clip['id']] = merge_clip(clips_by_id.get(clip['id'], {}), clip)
-    raw_clips = list(clips_by_id.values())
     songs = []
     stems = []
-    song_by_id = {}
     for clip in raw_clips:
         if clip.get('status') != 'complete' or not has_audio(clip):
             continue
@@ -578,7 +564,6 @@ def build_registry(library_root=DEFAULT_LIBRARY, project_root=DEFAULT_PROJECT, l
             base['facets'] = classify_facets(clip, base.get('stylePrompt'))
             base['tokenCount'] = len(tokens(base['prompt'] + ' ' + base['tags'] + ' ' + base.get('stylePrompt', '')))
             songs.append(base)
-            song_by_id[base['id']] = base
     stems_by_parent = defaultdict(list)
     for stem in stems:
         stems_by_parent[stem.get('parentId')].append(stem)
@@ -586,6 +571,28 @@ def build_registry(library_root=DEFAULT_LIBRARY, project_root=DEFAULT_PROJECT, l
         linked = stems_by_parent.get(song['id'], [])
         song['stemCount'] = len(linked)
         song['stemTypes'] = sorted(Counter(s['stemType'] for s in linked).keys())
+    return songs, stems
+
+
+def build_registry(library_root=DEFAULT_LIBRARY, project_root=DEFAULT_PROJECT, lyric_roots=None):
+    library_root = pathlib.Path(library_root)
+    project_root = pathlib.Path(project_root)
+    metadata_path = library_root / 'suno_library_metadata.json'
+    raw_clips = json.loads(metadata_path.read_text()) if metadata_path.exists() else []
+    clips_by_id = {}
+    for clip in raw_clips:
+        if isinstance(clip, dict) and clip.get('id'):
+            clips_by_id[clip['id']] = merge_clip(clips_by_id.get(clip['id'], {}), clip)
+    for clip in discover_playlist_export_clips(library_root):
+        if isinstance(clip, dict) and clip.get('id'):
+            clips_by_id[clip['id']] = merge_clip(clips_by_id.get(clip['id'], {}), clip)
+    for clip in discover_supplemental_import_clips(project_root):
+        if isinstance(clip, dict) and clip.get('id'):
+            clips_by_id[clip['id']] = merge_clip(clips_by_id.get(clip['id'], {}), clip)
+    songs, stems = normalize_clips(list(clips_by_id.values()), library_root)
+    stems_by_parent = defaultdict(list)
+    for stem in stems:
+        stems_by_parent[stem.get('parentId')].append(stem)
     external_lyrics = discover_external_lyrics(lyric_roots)
     lyric_masters = build_lyric_masters(songs, stems, external_lyrics)
     prompt_groups = build_prompt_groups(songs, lyric_masters)

@@ -1,0 +1,613 @@
+# Echo Album library inventory
+
+Generated: `2026-08-24T20:48:39.287434+00:00`
+
+This is a read-only, manifest-scoped audit. A path only counts when its bytes and evidence pass the stated gate.
+
+## Counts
+
+- `songs`: **176**
+- `mp3Complete`: **176**
+- `mp3Missing`: **0**
+- `wavComplete`: **5**
+- `wavMissing`: **171**
+- `manifestPathsCurrent`: **176**
+- `manifestPathsStaleOrInvalid`: **0**
+- `stemSourceAvailable`: **124**
+- `stemsComplete`: **124**
+- `stemsIncompleteWhereAvailable`: **0**
+- `stemsUnavailableAtSource`: **52**
+- `instrumentals`: **14**
+- `lyricsSourcePresent`: **162**
+- `lyricsSourceMissing`: **14**
+- `lyricsComplete`: **176**
+- `lyricsMissingRequired`: **0**
+- `actualTimingComplete`: **108**
+- `actualTimingMeasured`: **94**
+- `timingNotRequiredInstrumental`: **14**
+- `actualTimingMissingRequired`: **68**
+- `stemAnalysisComplete`: **55**
+- `directorProjectsPresent`: **176**
+- `directorScriptsComplete`: **2**
+- `directorScriptsMissing`: **174**
+
+## Healing queues
+
+### Missing/invalid MP3 (0)
+
+- None
+
+### Missing/invalid WAV (171)
+
+- Brave Tongues (`d6409d3a-96ca-4681-bb72-601d1bdb8bf8`)
+- Miss Infinity (`e32a2dff-2f78-4589-a5d3-2358636a369a`)
+- Gladiator (`5b4c7fff-82d8-431f-b796-8569c652978c`)
+- Miss Medusa (`b99908d9-b711-4a61-9201-c740020736b9`)
+- Wide and Narrows (`5103f30e-d632-41b7-a3b6-e4a8941b81e1`)
+- R.G.B. Nice Whale (`78680921-5f7e-43fe-adbf-c2f3b01c1f74`)
+- Red (`b7ad6369-3021-4846-9dd3-686b38ca7d47`)
+- Death Ground (`a7d9a9b6-4c9b-4f96-b508-64415f6dd276`)
+- Move Like Me (`842326eb-6f2d-43cd-af81-c9480740ad60`)
+- Blue (`c87baea1-2adb-48ff-9c7e-54e4fb5a93f4`)
+- A Name on the Horizon (`a836f959-64d3-4ef2-b175-7bc257020acc`)
+- Green (`15a21f6c-6fbe-4f32-81cb-62e251d04699`)
+- Bright You Are (`c2c0be83-dad7-489b-804e-05397044cadd`)
+- Nothing But Geometry (`4294c439-5d08-4be1-8965-b4a5659c3a69`)
+- Good Knight (`17b48166-6c86-48ce-a511-cad32f60f941`)
+- Trees Talk the Walk (`fcf3d450-f927-4826-baa7-689c2e6346ed`)
+- Boot for More (`977b309f-378d-4193-8a3f-2f2cb351631b`)
+- Zerbini (`43b0882c-84f0-4682-9802-2125aed8f8b5`)
+- Bok, Bok (`a0cf66d6-7908-46b5-b633-068d60314347`)
+- Nameless & Nothing (`cb2f07a4-c8f3-4e68-b791-146c08169c9c`)
+- I Knew a Bella (`3ee24de9-ac9f-428f-82c3-62cf19c6294f`)
+- Gates at the Mountain (`80ed296c-6396-4097-8245-52be5c844701`)
+- Sikh Grey DVD (`ecba228c-e76d-42a6-b964-767f71eb8edf`)
+- Married that Scary (`1b34d7a4-fd4b-4bda-9f72-8a907239296e`)
+- On her Pigeon again (`14951ffd-dc3d-4e15-af62-37c613066890`)
+- West Beach (`83dfde6a-bc86-4c45-b845-7e43623aaf3b`)
+- Asuna with the Tea (`8bdd0dfc-346a-4ecc-a5bb-4f638d7bbda4`)
+- Backwards Cap (`b4f3a39d-664e-493e-aca8-01b5b514b6f8`)
+- LitRPG Life (`4b9f48b5-3ca9-416e-b88e-75fd223a1dca`)
+- Our Anima Am an Ocean (`b3508fe1-00d4-4683-9b44-185e36a1ebce`)
+- Mediterranean Moisture (`06cd62d9-e023-4587-96f3-d73b3a024487`)
+- Boba Tea Strum (`3c37d495-9ead-4d7f-8c3a-3d2b743db1e0`)
+- Clouds Carry (`79b0e2c7-8495-4e76-96f3-388e13f1b5ca`)
+- Watermelon Honey, Due (`07cfc3c7-eb36-468e-85ad-9f404ec0032f`)
+- Parking Lot Parent (`6c6750b0-58a5-430b-8ba3-91782be095c6`)
+- Sisyphus on the Climb, Climb. (`3cd42ab0-5acb-4654-8d11-568de401e0cc`)
+- Appa Checkin' In (`970f999e-d4dd-48c0-aad9-5013e0ef892a`)
+- Silver plays Slivers (`f3128c8f-42b2-4547-a8c4-0ebcbc6dd0f1`)
+- Hearing Voices (`b89d80d2-91fc-4143-af2e-4389c346d3f9`)
+- If you wanna ride (`73861cf1-eff1-49c6-8d7e-d71276f99175`)
+- Legendary Birds and Regular Bees (`5b43d2a0-2816-4f2f-a147-d5d1e98f100a`)
+- Kats in Hawaii (`1fe054da-e53b-49fe-bf76-9c22bc58d3f5`)
+- Winter Grain (`89d07f6e-5a88-4cc6-80de-cba7ac645aa9`)
+- Strangers in this One (`75fb1a2c-c9a3-4da0-a81f-72e05c4f80ed`)
+- Paddle Board Pisces (`f866417b-2cfc-4dd4-af28-eda9d9038bec`)
+- Getting Kana Home (`cd2cb9c7-4e18-47d2-8fe1-c5307a8af34a`)
+- March the Hell-made Men (`b73a2144-feac-4a82-892f-74baeec70c59`)
+- What Could It Be (`533d7cf1-1d03-4c45-991c-9f4d79a30d3f`)
+- Heróyam Sláva (`60845030-afbb-452a-a09e-1db92c334bab`)
+- Emma's Update (`804c1216-d884-4aa7-aa73-13a5393d25e7`)
+- Tired Eyes (`88620520-2d50-4ae5-826b-81c3132ffff2`)
+- Espresso After Nine (`da897ca4-5c8f-4ca6-b1f7-681948557d3f`)
+- Fast Movers (`3bc5de6f-9be1-4bf4-a2f1-5c57627258d5`)
+- False Friends & Strange Fellows (`e08d22b7-a274-4f11-be23-1316ca87da0b`)
+- You Know How It Goes (`effcb35d-5b2d-420c-a78f-b960a404ae0b`)
+- Just for Now (`6e22c7c0-e4ab-4036-8490-ff0cc992830b`)
+- Strangers on That Hill (`92688ea3-f7f3-4113-a66c-e607cb5a9207`)
+- Ant and Birdy (`78a46288-c56e-4780-b2b2-d00f29ce8792`)
+- Cool Cat with the Kitten Look (`bb29acbe-ff71-458b-af11-eebbb56d3c75`)
+- Orange (`eac2ee5f-65f6-4805-8f93-72d7f419419a`)
+- Fighting! (`8183970e-573a-4dde-839b-f80c971768ba`)
+- Shadows (`dc3ae348-ab0f-43f3-90cc-95943e008c0d`)
+- Dancing with the Wind (`1a64293b-ece4-4f4c-b768-5e38d654146f`)
+- Lead on Elaine (`f55b6f9e-5fa2-48b8-bc2d-5665f2fb908e`)
+- Night is Me (`971954db-4ecd-4fbf-949a-e2acef380970`)
+- Captain and Sailor (`71dc2eec-daf1-4f05-be46-7b6ec32c14a2`)
+- Navy Wife (`3e54af14-bd7e-4d55-8592-ad3ef66d9488`)
+- Twinkle Toe (`abc7d9d0-9f1f-4417-890b-41c4c1585440`)
+- Because She Said So (`cd508962-7ef5-4235-afa7-8c4b3a84cbd2`)
+- Sheep at the Gate (`5b7085e5-2038-4087-937a-c251cffc3981`)
+- Twinkle Little Star (`fee74f7b-5976-4db9-ab0b-683a9c6fa2b8`)
+- Pocket Full of Butterflies (`cf644b3a-2ebb-4ec6-b477-66d1298afc6f`)
+- on your left tonight (`4049f3ce-068f-46f4-8561-3946af6ad49a`)
+- That Kind of Honor (`bbb235a1-c5c3-43eb-aba5-643961753dec`)
+- Whatever It Is (`77fbe70d-e1cd-4af0-9c95-b6d5becc8526`)
+- Raised the Zoo (`148b4915-36ea-44fb-a5e0-3d40f8a454ed`)
+- Between the Beats (`6f81ec52-83bf-42db-b370-a34baac1ba67`)
+- A Name I Would Trade (`5e807d33-7197-4fe1-ba20-02427b202bcc`)
+- Luna di Clara (`61be6ae2-ac25-4b26-a919-de2d073216bd`)
+- Sea Lion's Breath (`a3952912-85ec-483b-88c4-d6fa9f255a31`)
+- Sun Hidden in the Dark (`b94c932c-5ef5-43fa-8340-ae2f1bcb401c`)
+- Wishing Well (`51c9fd8f-f25a-45d5-88e3-10bc9d6686e4`)
+- Miss Blue (`59817a86-8ba2-423c-b62b-f4f95a0af76b`)
+- Red Sunset (`6248f6d8-b903-4571-8010-9bda562b7cc3`)
+- Wolf with a Bark (`23c52276-6682-43d6-8970-1385ba7a01e7`)
+- Ghosts Watching T (`2e4570e6-e0ae-480c-af61-386390358a24`)
+- Colors After the Sea (`069ed813-a8a6-4c19-bf76-2bbb68033a5d`)
+- Red Riding for a Sea of (`c6e140ef-b644-46b8-a037-f250a2ea5b86`)
+- If It Got Sensory (`c7ef2061-3a61-4a1d-9add-05d2085393d8`)
+- Chic'in Wutt? (`7627cbc2-500d-4011-8ebf-2b5c31c12fc6`)
+- Wobble🐈🤌🏾🤏🏻 (`151b31ba-4f4a-4847-accf-e994895542ca`)
+- Black Hole Spins (`26b69462-eeb0-4bbf-b9a4-d3755479ec18`)
+- Through the Woods (`01dfbaad-21a9-467b-be55-406e9d94f00d`)
+- If You Don't Know Me (`a36ed06c-2b3b-476a-be6b-740e7f5fe841`)
+- One More Little Bella (`43f99180-b982-454c-9b3f-18c8a4cd81c4`)
+- That Boy Liberty (`68115bf1-509d-4e21-b016-384952a6b823`)
+- We could call her Duno (`6c339c91-f145-4ab7-b8ae-16b407312838`)
+- 4:44 Denied Again (`dc1c0af0-9078-4673-bb3e-8150799ba8f9`)
+- 11:23 Meant to Meet? (`95d96276-be43-4671-8cd1-c8d9fc457f65`)
+- Same Sky (`6f3e0b03-2f94-4607-94ed-9d5754182e82`)
+- 2 a.m. Lights (`53d39c8a-7d30-420a-912a-2a25a2da5ed8`)
+- Sailor Too (`effde536-bc5f-4459-bcfd-7646d12c4293`)
+- About Forever Now (`e1b5c000-4ac3-4232-ab13-0849c18b139b`)
+- What’d ya Do? (`9a00b51a-2501-4982-a50f-1e74c6f9f78b`)
+- Cross my Eye (`1e27d1e6-dfaa-4a70-a711-d8770b702ca3`)
+- Am Carraway, Thu (`1141628d-52dd-4d0f-8589-06bfd24b11d2`)
+- Pour a Warm One (`d97699ee-5a86-43b0-9c55-d61b46a23361`)
+- Middle of a Spark (`c317b8e8-8d6f-407f-afe0-ed8fd829e130`)
+- Halfway Home (`91d68989-a434-4bcd-894e-37c562e3d7f6`)
+- I forgot what the mirror said last time (`a52851cb-b354-4be9-992e-b67c35936002`)
+- Signal in the Tide (Pipa Night Drift Mix) (`1ce6ea29-3b7f-4d56-bd59-8c4e8b4a2068`)
+- ‘Til the Light Walks Inn.wandering(), (`89627b28-46ea-4490-aeea-1a221e886d84`)
+- Dear Papa XX Asia (`cf60031b-9460-485d-bd68-42506adb63c3`)
+- Projectors (`49cfe1d9-95c9-4ff7-b0a9-297113490cd2`)
+- In the Shift (`b34d6a09-8a69-4525-886f-2a1ae0e6d784`)
+- Green xx Asia (`c44e0916-0e38-46b6-bd2b-8190e6cdc5b7`)
+- 3 a.m. Emoji Pain (`541895cd-136b-4d80-90f4-8753e2a84b2a`)
+- Off Track, Circle Back (`4af4b276-a951-4e39-9073-26a259799708`)
+- 📝 Campfire.exe (`999c5d5c-1229-4d50-a4f8-84135486a757`)
+- 🎼 Cap’n Thu & the Chicken Casadei (`40c31efb-0ddd-48ba-b696-e7d9df41a6cc`)
+- Card Declined (`9a2de4d7-e39a-4c39-9148-79592b85c151`)
+- Redacted Lullaby (`9fb26371-8a15-4f04-aa95-502b36fdcff8`)
+- PipasaySenpai Yippee x Bounce (`97cd5415-3eb8-41c5-b289-96c4573460c4`)
+- Blameless, Call Me (`d76f49b7-a3ca-4e6e-bb2c-ee97b08e4e46`)
+- I forgot what the mirror said last time (`fbae2b16-1b52-49a0-9a7b-ed5aa873ddab`)
+- First Date gl.itch(“hf”) (`c8247eb1-8300-40c8-a4de-858fb16c44ac`)
+- Iron Mask (`729cb99a-baac-41e1-ba64-b91afe94562c`)
+- Missing Gno.s() (`8c0cac5a-44cb-4db2-a1d7-22b7db5a4290`)
+- 🎵 “Gangsta in the Broadlight: The Gospel of Conviction” (ft. EmUhhim?)) (`45d3de8e-8447-4e7d-ab53-99e839a2afa8`)
+- "Bread, Conviction, and Poop in the Tub" (`4ef33755-66c4-48e6-9adb-8d6976e65629`)
+- The Best Bet Was the Bath (`6f6bbad5-e040-4307-8f5d-736205ac631c`)
+- Quitting the moon (`e543909b-71ca-44ee-921d-ccab1920be10`)
+- Show Me What’s True (`2ab6ce0b-e313-4304-b778-92cde3b73194`)
+- Eye Can’t Quit (`4236b04d-c8c0-456a-a8f2-d4033a4167ed`)
+- The Scientist (`1fef23f7-16a7-48a3-84da-6fcde36da97a`)
+- Never Meant For Us (`e72a3841-0d5a-4461-9cfe-3098135f1f7b`)
+- Save Point (Found You in the Code) (`88045508-caad-452e-8b72-0724827094ee`)
+- Read Receipts for Elaine (`3fb45f64-f1d9-4768-81b9-928061252ec5`)
+- On the Nose (`18fc92f3-79b1-408c-970f-b5d5f6d8e37d`)
+- Dear Past Life (`1851becb-d7dd-4c43-85a7-173345d76a3a`)
+- Iron Mask Traveler (`a0723f0f-1ba0-4831-b43c-12e046316b54`)
+- Left knee bent in the shadow of flame, (`30f10cdb-2840-4754-bf96-83d6f2a12d3c`)
+- Pour One (`204141da-ec17-40a7-b9b9-3aa99b1212c7`)
+- There Goes a Super (`6de63484-9108-4dac-b41f-3ea98a73492b`)
+- What's an S? (`b09e452f-68fa-4bfe-96c9-33ca839db5c5`)
+- Puget Cascades Frozen (`c535e8d7-b34a-409e-965a-2a9d6f2aefb0`)
+- Corner Check (`0544a573-c955-4025-9c13-ced74cd49075`)
+- Senpai River Radio (`d8cb01bb-0081-4b1f-85bc-8d673e459f01`)
+- Gilded Sirens (`66f20af1-e12e-4d62-b4be-5ece01c52abb`)
+- Meow-meow-pew (`a79cd5c4-045c-45dd-8925-9e57d3524559`)
+- Solder Heartbeat (`d9939f3a-2487-4e95-9ba9-e177028aa9d6`)
+- Tin Roof Valentine (`ec56c2ca-6e16-47d6-ad3a-a50ab06c760f`)
+- Tongue-Tied Thunder (`4fd61923-8884-488a-b93d-e9dff2c0b248`)
+- Lionfire Rhapsody (`154c3aca-ff43-48aa-a837-47e88429379d`)
+- Campfire Lullaby (`892ead59-b878-4779-95e5-d5e87ead8e1e`)
+- One More Watch (`4123ae1b-fbba-4f2a-a011-8c07eaa19277`)
+- Copper Sunrise (`8f56bfa5-717a-437a-a1ca-b69e2ea215a5`)
+- Calico Steam (`43e8cc80-5b2e-4bbd-b0ee-b8f1fed46d5a`)
+- TristrammyWhamBam (`13a6e54e-d703-4d8d-a3d6-77a44ffd0afd`)
+- BongBongBoink (`ec6c2dc5-3143-4f52-8a01-4a3061c25558`)
+- Bella Chiao Protocol x I don’t hear voices, but I feel like…/… (Mashup) (`f2828bb2-b196-4cbe-a831-4c7922941b6f`)
+- ⚓️.🏴‍☠️ife() (`181f765f-7e94-4d04-bb2e-3df63e63d1cf`)
+- Buckle Up (`df0e777d-497c-44da-8d59-7123ad55d805`)
+- Mountain out of Me (`1420a234-9d8e-4af7-a715-fd16f200484d`)
+- Rust and Rain (`ae9dcc02-1087-44ba-b6df-8faa541b6765`)
+- Neon Campfire (`a2cac7a0-634c-47de-8f09-b1c5cfda9f2b`)
+- Eatin' Am Good (`2726b80a-f3bc-45f8-99e6-ae06d7ddc02a`)
+- Pocket Full of Butterflies (`7852023d-3b30-487a-a487-3987842bcd0e`)
+- Pocket Full of Butterflies (`a5efeefd-6e77-45e3-8341-38453d66ee32`)
+- Rarely Him (`ef59c25c-465b-4de5-9604-00203532071c`)
+- One More Corner (`a1077286-e8c8-4486-ab4d-64020e76d726`)
+
+### Stale/invalid declared master path (0)
+
+- None
+
+### Incomplete stems where Suno exposes stems (0)
+
+- None
+
+### Required lyrics missing (0)
+
+- None
+
+### Required actual timing missing or rejected (68)
+
+- Brave Tongues (`d6409d3a-96ca-4681-bb72-601d1bdb8bf8`) — missing
+- Foreign Hawties (`8530e289-42ee-4a95-93ee-c6d2206ce672`) — missing-or-invalid-json
+- Miss Infinity (`e32a2dff-2f78-4589-a5d3-2358636a369a`) — missing
+- Gladiator (`5b4c7fff-82d8-431f-b796-8569c652978c`) — missing
+- For the Throat (`253247b8-caac-4c26-9a9b-463b7ccf59ce`) — missing
+- R.G.B. Nice Whale (`78680921-5f7e-43fe-adbf-c2f3b01c1f74`) — confidence-below-0.60
+- Red (`b7ad6369-3021-4846-9dd3-686b38ca7d47`) — missing
+- Death Ground (`a7d9a9b6-4c9b-4f96-b508-64415f6dd276`) — confidence-below-0.60
+- Green (`15a21f6c-6fbe-4f32-81cb-62e251d04699`) — confidence-below-0.60
+- Nothing But Geometry (`4294c439-5d08-4be1-8965-b4a5659c3a69`) — missing
+- Trees Talk the Walk (`fcf3d450-f927-4826-baa7-689c2e6346ed`) — missing
+- 90s Nerd (`354d7124-55aa-4881-ae72-b7e9de80e977`) — missing-or-invalid-json
+- Zerbini (`43b0882c-84f0-4682-9802-2125aed8f8b5`) — missing
+- Bok, Bok (`a0cf66d6-7908-46b5-b633-068d60314347`) — missing
+- Nameless & Nothing (`cb2f07a4-c8f3-4e68-b791-146c08169c9c`) — missing
+- I Knew a Bella (`3ee24de9-ac9f-428f-82c3-62cf19c6294f`) — missing-or-invalid-json
+- Gates at the Mountain (`80ed296c-6396-4097-8245-52be5c844701`) — missing
+- Sikh Grey DVD (`ecba228c-e76d-42a6-b964-767f71eb8edf`) — missing-or-invalid-json
+- Mediterranean Moisture (`06cd62d9-e023-4587-96f3-d73b3a024487`) — missing
+- Boba Tea Strum (`3c37d495-9ead-4d7f-8c3a-3d2b743db1e0`) — missing
+- Clouds Carry (`79b0e2c7-8495-4e76-96f3-388e13f1b5ca`) — missing
+- Winter Grain (`89d07f6e-5a88-4cc6-80de-cba7ac645aa9`) — missing
+- Emma's Update (`804c1216-d884-4aa7-aa73-13a5393d25e7`) — missing
+- Tired Eyes (`88620520-2d50-4ae5-826b-81c3132ffff2`) — missing
+- Fast Movers (`3bc5de6f-9be1-4bf4-a2f1-5c57627258d5`) — missing
+- False Friends & Strange Fellows (`e08d22b7-a274-4f11-be23-1316ca87da0b`) — missing
+- Strangers on That Hill (`92688ea3-f7f3-4113-a66c-e607cb5a9207`) — missing
+- Dancing with the Wind (`1a64293b-ece4-4f4c-b768-5e38d654146f`) — missing
+- Lead on Elaine (`f55b6f9e-5fa2-48b8-bc2d-5665f2fb908e`) — missing-or-invalid-json
+- Captain and Sailor (`71dc2eec-daf1-4f05-be46-7b6ec32c14a2`) — missing
+- Pocket Full of Butterflies (`cf644b3a-2ebb-4ec6-b477-66d1298afc6f`) — missing
+- on your left tonight (`4049f3ce-068f-46f4-8561-3946af6ad49a`) — missing
+- That Kind of Honor (`bbb235a1-c5c3-43eb-aba5-643961753dec`) — confidence-below-0.60
+- Whatever It Is (`77fbe70d-e1cd-4af0-9c95-b6d5becc8526`) — missing
+- Between the Beats (`6f81ec52-83bf-42db-b370-a34baac1ba67`) — missing
+- A Name I Would Trade (`5e807d33-7197-4fe1-ba20-02427b202bcc`) — missing
+- Luna di Clara (`61be6ae2-ac25-4b26-a919-de2d073216bd`) — missing
+- Sea Lion's Breath (`a3952912-85ec-483b-88c4-d6fa9f255a31`) — missing
+- Sun Hidden in the Dark (`b94c932c-5ef5-43fa-8340-ae2f1bcb401c`) — missing
+- Miss Blue (`59817a86-8ba2-423c-b62b-f4f95a0af76b`) — missing
+- Red Sunset (`6248f6d8-b903-4571-8010-9bda562b7cc3`) — missing
+- Ghosts Watching T (`2e4570e6-e0ae-480c-af61-386390358a24`) — missing
+- Colors After the Sea (`069ed813-a8a6-4c19-bf76-2bbb68033a5d`) — missing
+- Red Riding for a Sea of (`c6e140ef-b644-46b8-a037-f250a2ea5b86`) — missing
+- Wobble🐈🤌🏾🤏🏻 (`151b31ba-4f4a-4847-accf-e994895542ca`) — missing-or-invalid-json
+- Black Hole Spins (`26b69462-eeb0-4bbf-b9a4-d3755479ec18`) — missing
+- One More Little Bella (`43f99180-b982-454c-9b3f-18c8a4cd81c4`) — missing
+- 4:44 Denied Again (`dc1c0af0-9078-4673-bb3e-8150799ba8f9`) — missing-or-invalid-json
+- Sailor Too (`effde536-bc5f-4459-bcfd-7646d12c4293`) — missing-or-invalid-json
+- What’d ya Do? (`9a00b51a-2501-4982-a50f-1e74c6f9f78b`) — missing
+- Cross my Eye (`1e27d1e6-dfaa-4a70-a711-d8770b702ca3`) — missing-or-invalid-json
+- Am Carraway, Thu (`1141628d-52dd-4d0f-8589-06bfd24b11d2`) — missing
+- I forgot what the mirror said last time (`a52851cb-b354-4be9-992e-b67c35936002`) — missing-or-invalid-json
+- Signal in the Tide (Pipa Night Drift Mix) (`1ce6ea29-3b7f-4d56-bd59-8c4e8b4a2068`) — missing
+- Dear Papa XX Asia (`cf60031b-9460-485d-bd68-42506adb63c3`) — confidence-below-0.60
+- In the Shift (`b34d6a09-8a69-4525-886f-2a1ae0e6d784`) — missing-or-invalid-json
+- Green xx Asia (`c44e0916-0e38-46b6-bd2b-8190e6cdc5b7`) — missing
+- 3 a.m. Emoji Pain (`541895cd-136b-4d80-90f4-8753e2a84b2a`) — missing-or-invalid-json
+- 🎼 Cap’n Thu & the Chicken Casadei (`40c31efb-0ddd-48ba-b696-e7d9df41a6cc`) — confidence-below-0.60
+- First Date gl.itch(“hf”) (`c8247eb1-8300-40c8-a4de-858fb16c44ac`) — missing-or-invalid-json
+- 🎵 “Gangsta in the Broadlight: The Gospel of Conviction” (ft. EmUhhim?)) (`45d3de8e-8447-4e7d-ab53-99e839a2afa8`) — missing-or-invalid-json
+- Iron Mask Traveler (`a0723f0f-1ba0-4831-b43c-12e046316b54`) — missing-or-invalid-json
+- Corner Check (`0544a573-c955-4025-9c13-ced74cd49075`) — confidence-below-0.60
+- Senpai River Radio (`d8cb01bb-0081-4b1f-85bc-8d673e459f01`) — confidence-below-0.60
+- Pocket Full of Butterflies (`7852023d-3b30-487a-a487-3987842bcd0e`) — missing
+- Pocket Full of Butterflies (`a5efeefd-6e77-45e3-8341-38453d66ee32`) — missing
+- Rarely Him (`ef59c25c-465b-4de5-9604-00203532071c`) — missing
+- One More Corner (`a1077286-e8c8-4486-ab4d-64020e76d726`) — missing
+
+### Stem/audio analysis missing (121)
+
+- Brave Tongues (`d6409d3a-96ca-4681-bb72-601d1bdb8bf8`)
+- Miss Infinity (`e32a2dff-2f78-4589-a5d3-2358636a369a`)
+- Gladiator (`5b4c7fff-82d8-431f-b796-8569c652978c`)
+- For the Throat (`253247b8-caac-4c26-9a9b-463b7ccf59ce`)
+- Miss Medusa (`b99908d9-b711-4a61-9201-c740020736b9`)
+- Wide and Narrows (`5103f30e-d632-41b7-a3b6-e4a8941b81e1`)
+- R.G.B. Nice Whale (`78680921-5f7e-43fe-adbf-c2f3b01c1f74`)
+- Red (`b7ad6369-3021-4846-9dd3-686b38ca7d47`)
+- Death Ground (`a7d9a9b6-4c9b-4f96-b508-64415f6dd276`)
+- Move Like Me (`842326eb-6f2d-43cd-af81-c9480740ad60`)
+- Blue (`c87baea1-2adb-48ff-9c7e-54e4fb5a93f4`)
+- A Name on the Horizon (`a836f959-64d3-4ef2-b175-7bc257020acc`)
+- Green (`15a21f6c-6fbe-4f32-81cb-62e251d04699`)
+- Bright You Are (`c2c0be83-dad7-489b-804e-05397044cadd`)
+- Nothing But Geometry (`4294c439-5d08-4be1-8965-b4a5659c3a69`)
+- Good Knight (`17b48166-6c86-48ce-a511-cad32f60f941`)
+- Trees Talk the Walk (`fcf3d450-f927-4826-baa7-689c2e6346ed`)
+- Boot for More (`977b309f-378d-4193-8a3f-2f2cb351631b`)
+- Zerbini (`43b0882c-84f0-4682-9802-2125aed8f8b5`)
+- Bok, Bok (`a0cf66d6-7908-46b5-b633-068d60314347`)
+- Nameless & Nothing (`cb2f07a4-c8f3-4e68-b791-146c08169c9c`)
+- Married that Scary (`1b34d7a4-fd4b-4bda-9f72-8a907239296e`)
+- On her Pigeon again (`14951ffd-dc3d-4e15-af62-37c613066890`)
+- Asuna with the Tea (`8bdd0dfc-346a-4ecc-a5bb-4f638d7bbda4`)
+- Backwards Cap (`b4f3a39d-664e-493e-aca8-01b5b514b6f8`)
+- LitRPG Life (`4b9f48b5-3ca9-416e-b88e-75fd223a1dca`)
+- Our Anima Am an Ocean (`b3508fe1-00d4-4683-9b44-185e36a1ebce`)
+- Mediterranean Moisture (`06cd62d9-e023-4587-96f3-d73b3a024487`)
+- Boba Tea Strum (`3c37d495-9ead-4d7f-8c3a-3d2b743db1e0`)
+- Clouds Carry (`79b0e2c7-8495-4e76-96f3-388e13f1b5ca`)
+- Watermelon Honey, Due (`07cfc3c7-eb36-468e-85ad-9f404ec0032f`)
+- Parking Lot Parent (`6c6750b0-58a5-430b-8ba3-91782be095c6`)
+- Sisyphus on the Climb, Climb. (`3cd42ab0-5acb-4654-8d11-568de401e0cc`)
+- Appa Checkin' In (`970f999e-d4dd-48c0-aad9-5013e0ef892a`)
+- Silver plays Slivers (`f3128c8f-42b2-4547-a8c4-0ebcbc6dd0f1`)
+- If you wanna ride (`73861cf1-eff1-49c6-8d7e-d71276f99175`)
+- Legendary Birds and Regular Bees (`5b43d2a0-2816-4f2f-a147-d5d1e98f100a`)
+- Winter Grain (`89d07f6e-5a88-4cc6-80de-cba7ac645aa9`)
+- Strangers in this One (`75fb1a2c-c9a3-4da0-a81f-72e05c4f80ed`)
+- Paddle Board Pisces (`f866417b-2cfc-4dd4-af28-eda9d9038bec`)
+- March the Hell-made Men (`b73a2144-feac-4a82-892f-74baeec70c59`)
+- What Could It Be (`533d7cf1-1d03-4c45-991c-9f4d79a30d3f`)
+- Heróyam Sláva (`60845030-afbb-452a-a09e-1db92c334bab`)
+- Emma's Update (`804c1216-d884-4aa7-aa73-13a5393d25e7`)
+- Tired Eyes (`88620520-2d50-4ae5-826b-81c3132ffff2`)
+- Espresso After Nine (`da897ca4-5c8f-4ca6-b1f7-681948557d3f`)
+- Fast Movers (`3bc5de6f-9be1-4bf4-a2f1-5c57627258d5`)
+- False Friends & Strange Fellows (`e08d22b7-a274-4f11-be23-1316ca87da0b`)
+- You Know How It Goes (`effcb35d-5b2d-420c-a78f-b960a404ae0b`)
+- Just for Now (`6e22c7c0-e4ab-4036-8490-ff0cc992830b`)
+- Strangers on That Hill (`92688ea3-f7f3-4113-a66c-e607cb5a9207`)
+- Ant and Birdy (`78a46288-c56e-4780-b2b2-d00f29ce8792`)
+- Cool Cat with the Kitten Look (`bb29acbe-ff71-458b-af11-eebbb56d3c75`)
+- Orange (`eac2ee5f-65f6-4805-8f93-72d7f419419a`)
+- Fighting! (`8183970e-573a-4dde-839b-f80c971768ba`)
+- Shadows (`dc3ae348-ab0f-43f3-90cc-95943e008c0d`)
+- Dancing with the Wind (`1a64293b-ece4-4f4c-b768-5e38d654146f`)
+- Night is Me (`971954db-4ecd-4fbf-949a-e2acef380970`)
+- Captain and Sailor (`71dc2eec-daf1-4f05-be46-7b6ec32c14a2`)
+- Twinkle Toe (`abc7d9d0-9f1f-4417-890b-41c4c1585440`)
+- Because She Said So (`cd508962-7ef5-4235-afa7-8c4b3a84cbd2`)
+- Sheep at the Gate (`5b7085e5-2038-4087-937a-c251cffc3981`)
+- Twinkle Little Star (`fee74f7b-5976-4db9-ab0b-683a9c6fa2b8`)
+- Pocket Full of Butterflies (`cf644b3a-2ebb-4ec6-b477-66d1298afc6f`)
+- on your left tonight (`4049f3ce-068f-46f4-8561-3946af6ad49a`)
+- That Kind of Honor (`bbb235a1-c5c3-43eb-aba5-643961753dec`)
+- Whatever It Is (`77fbe70d-e1cd-4af0-9c95-b6d5becc8526`)
+- Raised the Zoo (`148b4915-36ea-44fb-a5e0-3d40f8a454ed`)
+- Between the Beats (`6f81ec52-83bf-42db-b370-a34baac1ba67`)
+- A Name I Would Trade (`5e807d33-7197-4fe1-ba20-02427b202bcc`)
+- Luna di Clara (`61be6ae2-ac25-4b26-a919-de2d073216bd`)
+- Sea Lion's Breath (`a3952912-85ec-483b-88c4-d6fa9f255a31`)
+- Sun Hidden in the Dark (`b94c932c-5ef5-43fa-8340-ae2f1bcb401c`)
+- Wishing Well (`51c9fd8f-f25a-45d5-88e3-10bc9d6686e4`)
+- Miss Blue (`59817a86-8ba2-423c-b62b-f4f95a0af76b`)
+- Red Sunset (`6248f6d8-b903-4571-8010-9bda562b7cc3`)
+- Wolf with a Bark (`23c52276-6682-43d6-8970-1385ba7a01e7`)
+- Ghosts Watching T (`2e4570e6-e0ae-480c-af61-386390358a24`)
+- Colors After the Sea (`069ed813-a8a6-4c19-bf76-2bbb68033a5d`)
+- Red Riding for a Sea of (`c6e140ef-b644-46b8-a037-f250a2ea5b86`)
+- If It Got Sensory (`c7ef2061-3a61-4a1d-9add-05d2085393d8`)
+- Chic'in Wutt? (`7627cbc2-500d-4011-8ebf-2b5c31c12fc6`)
+- Through the Woods (`01dfbaad-21a9-467b-be55-406e9d94f00d`)
+- If You Don't Know Me (`a36ed06c-2b3b-476a-be6b-740e7f5fe841`)
+- One More Little Bella (`43f99180-b982-454c-9b3f-18c8a4cd81c4`)
+- We could call her Duno (`6c339c91-f145-4ab7-b8ae-16b407312838`)
+- 4:44 Denied Again (`dc1c0af0-9078-4673-bb3e-8150799ba8f9`)
+- What’d ya Do? (`9a00b51a-2501-4982-a50f-1e74c6f9f78b`)
+- Am Carraway, Thu (`1141628d-52dd-4d0f-8589-06bfd24b11d2`)
+- Pour a Warm One (`d97699ee-5a86-43b0-9c55-d61b46a23361`)
+- I forgot what the mirror said last time (`a52851cb-b354-4be9-992e-b67c35936002`)
+- Signal in the Tide (Pipa Night Drift Mix) (`1ce6ea29-3b7f-4d56-bd59-8c4e8b4a2068`)
+- Dear Papa XX Asia (`cf60031b-9460-485d-bd68-42506adb63c3`)
+- Projectors (`49cfe1d9-95c9-4ff7-b0a9-297113490cd2`)
+- Green xx Asia (`c44e0916-0e38-46b6-bd2b-8190e6cdc5b7`)
+- 3 a.m. Emoji Pain (`541895cd-136b-4d80-90f4-8753e2a84b2a`)
+- 📝 Campfire.exe (`999c5d5c-1229-4d50-a4f8-84135486a757`)
+- 🎼 Cap’n Thu & the Chicken Casadei (`40c31efb-0ddd-48ba-b696-e7d9df41a6cc`)
+- Card Declined (`9a2de4d7-e39a-4c39-9148-79592b85c151`)
+- Redacted Lullaby (`9fb26371-8a15-4f04-aa95-502b36fdcff8`)
+- I forgot what the mirror said last time (`fbae2b16-1b52-49a0-9a7b-ed5aa873ddab`)
+- The Best Bet Was the Bath (`6f6bbad5-e040-4307-8f5d-736205ac631c`)
+- Quitting the moon (`e543909b-71ca-44ee-921d-ccab1920be10`)
+- Show Me What’s True (`2ab6ce0b-e313-4304-b778-92cde3b73194`)
+- Eye Can’t Quit (`4236b04d-c8c0-456a-a8f2-d4033a4167ed`)
+- The Scientist (`1fef23f7-16a7-48a3-84da-6fcde36da97a`)
+- Never Meant For Us (`e72a3841-0d5a-4461-9cfe-3098135f1f7b`)
+- Dear Past Life (`1851becb-d7dd-4c43-85a7-173345d76a3a`)
+- Left knee bent in the shadow of flame, (`30f10cdb-2840-4754-bf96-83d6f2a12d3c`)
+- Pour One (`204141da-ec17-40a7-b9b9-3aa99b1212c7`)
+- There Goes a Super (`6de63484-9108-4dac-b41f-3ea98a73492b`)
+- What's an S? (`b09e452f-68fa-4bfe-96c9-33ca839db5c5`)
+- One More Watch (`4123ae1b-fbba-4f2a-a011-8c07eaa19277`)
+- Buckle Up (`df0e777d-497c-44da-8d59-7123ad55d805`)
+- Mountain out of Me (`1420a234-9d8e-4af7-a715-fd16f200484d`)
+- Rust and Rain (`ae9dcc02-1087-44ba-b6df-8faa541b6765`)
+- Neon Campfire (`a2cac7a0-634c-47de-8f09-b1c5cfda9f2b`)
+- Eatin' Am Good (`2726b80a-f3bc-45f8-99e6-ae06d7ddc02a`)
+- Pocket Full of Butterflies (`7852023d-3b30-487a-a487-3987842bcd0e`)
+- Pocket Full of Butterflies (`a5efeefd-6e77-45e3-8341-38453d66ee32`)
+- Rarely Him (`ef59c25c-465b-4de5-9604-00203532071c`)
+
+### Director script not complete under the six-gate protocol (174)
+
+- Brave Tongues (`d6409d3a-96ca-4681-bb72-601d1bdb8bf8`)
+- Foreign Hawties (`8530e289-42ee-4a95-93ee-c6d2206ce672`)
+- Miss Infinity (`e32a2dff-2f78-4589-a5d3-2358636a369a`)
+- Gladiator (`5b4c7fff-82d8-431f-b796-8569c652978c`)
+- For the Throat (`253247b8-caac-4c26-9a9b-463b7ccf59ce`)
+- Miss Medusa (`b99908d9-b711-4a61-9201-c740020736b9`)
+- Wide and Narrows (`5103f30e-d632-41b7-a3b6-e4a8941b81e1`)
+- R.G.B. Nice Whale (`78680921-5f7e-43fe-adbf-c2f3b01c1f74`)
+- Red (`b7ad6369-3021-4846-9dd3-686b38ca7d47`)
+- Death Ground (`a7d9a9b6-4c9b-4f96-b508-64415f6dd276`)
+- Move Like Me (`842326eb-6f2d-43cd-af81-c9480740ad60`)
+- Blue (`c87baea1-2adb-48ff-9c7e-54e4fb5a93f4`)
+- A Name on the Horizon (`a836f959-64d3-4ef2-b175-7bc257020acc`)
+- Green (`15a21f6c-6fbe-4f32-81cb-62e251d04699`)
+- Bright You Are (`c2c0be83-dad7-489b-804e-05397044cadd`)
+- Nothing But Geometry (`4294c439-5d08-4be1-8965-b4a5659c3a69`)
+- Good Knight (`17b48166-6c86-48ce-a511-cad32f60f941`)
+- Trees Talk the Walk (`fcf3d450-f927-4826-baa7-689c2e6346ed`)
+- 90s Nerd (`354d7124-55aa-4881-ae72-b7e9de80e977`)
+- Boot for More (`977b309f-378d-4193-8a3f-2f2cb351631b`)
+- Zerbini (`43b0882c-84f0-4682-9802-2125aed8f8b5`)
+- Bok, Bok (`a0cf66d6-7908-46b5-b633-068d60314347`)
+- Nameless & Nothing (`cb2f07a4-c8f3-4e68-b791-146c08169c9c`)
+- I Knew a Bella (`3ee24de9-ac9f-428f-82c3-62cf19c6294f`)
+- Gates at the Mountain (`80ed296c-6396-4097-8245-52be5c844701`)
+- Sikh Grey DVD (`ecba228c-e76d-42a6-b964-767f71eb8edf`)
+- Married that Scary (`1b34d7a4-fd4b-4bda-9f72-8a907239296e`)
+- On her Pigeon again (`14951ffd-dc3d-4e15-af62-37c613066890`)
+- West Beach (`83dfde6a-bc86-4c45-b845-7e43623aaf3b`)
+- Asuna with the Tea (`8bdd0dfc-346a-4ecc-a5bb-4f638d7bbda4`)
+- Backwards Cap (`b4f3a39d-664e-493e-aca8-01b5b514b6f8`)
+- LitRPG Life (`4b9f48b5-3ca9-416e-b88e-75fd223a1dca`)
+- Our Anima Am an Ocean (`b3508fe1-00d4-4683-9b44-185e36a1ebce`)
+- Mediterranean Moisture (`06cd62d9-e023-4587-96f3-d73b3a024487`)
+- Boba Tea Strum (`3c37d495-9ead-4d7f-8c3a-3d2b743db1e0`)
+- Clouds Carry (`79b0e2c7-8495-4e76-96f3-388e13f1b5ca`)
+- Watermelon Honey, Due (`07cfc3c7-eb36-468e-85ad-9f404ec0032f`)
+- Parking Lot Parent (`6c6750b0-58a5-430b-8ba3-91782be095c6`)
+- Sisyphus on the Climb, Climb. (`3cd42ab0-5acb-4654-8d11-568de401e0cc`)
+- Appa Checkin' In (`970f999e-d4dd-48c0-aad9-5013e0ef892a`)
+- Silver plays Slivers (`f3128c8f-42b2-4547-a8c4-0ebcbc6dd0f1`)
+- Hearing Voices (`b89d80d2-91fc-4143-af2e-4389c346d3f9`)
+- If you wanna ride (`73861cf1-eff1-49c6-8d7e-d71276f99175`)
+- Legendary Birds and Regular Bees (`5b43d2a0-2816-4f2f-a147-d5d1e98f100a`)
+- Kats in Hawaii (`1fe054da-e53b-49fe-bf76-9c22bc58d3f5`)
+- Winter Grain (`89d07f6e-5a88-4cc6-80de-cba7ac645aa9`)
+- Strangers in this One (`75fb1a2c-c9a3-4da0-a81f-72e05c4f80ed`)
+- Paddle Board Pisces (`f866417b-2cfc-4dd4-af28-eda9d9038bec`)
+- Getting Kana Home (`cd2cb9c7-4e18-47d2-8fe1-c5307a8af34a`)
+- March the Hell-made Men (`b73a2144-feac-4a82-892f-74baeec70c59`)
+- What Could It Be (`533d7cf1-1d03-4c45-991c-9f4d79a30d3f`)
+- Heróyam Sláva (`60845030-afbb-452a-a09e-1db92c334bab`)
+- Emma's Update (`804c1216-d884-4aa7-aa73-13a5393d25e7`)
+- Tired Eyes (`88620520-2d50-4ae5-826b-81c3132ffff2`)
+- Espresso After Nine (`da897ca4-5c8f-4ca6-b1f7-681948557d3f`)
+- Fast Movers (`3bc5de6f-9be1-4bf4-a2f1-5c57627258d5`)
+- False Friends & Strange Fellows (`e08d22b7-a274-4f11-be23-1316ca87da0b`)
+- You Know How It Goes (`effcb35d-5b2d-420c-a78f-b960a404ae0b`)
+- Just for Now (`6e22c7c0-e4ab-4036-8490-ff0cc992830b`)
+- Strangers on That Hill (`92688ea3-f7f3-4113-a66c-e607cb5a9207`)
+- Ant and Birdy (`78a46288-c56e-4780-b2b2-d00f29ce8792`)
+- Cool Cat with the Kitten Look (`bb29acbe-ff71-458b-af11-eebbb56d3c75`)
+- Orange (`eac2ee5f-65f6-4805-8f93-72d7f419419a`)
+- Fighting! (`8183970e-573a-4dde-839b-f80c971768ba`)
+- Shadows (`dc3ae348-ab0f-43f3-90cc-95943e008c0d`)
+- Dancing with the Wind (`1a64293b-ece4-4f4c-b768-5e38d654146f`)
+- Lead on Elaine (`f55b6f9e-5fa2-48b8-bc2d-5665f2fb908e`)
+- Night is Me (`971954db-4ecd-4fbf-949a-e2acef380970`)
+- Captain and Sailor (`71dc2eec-daf1-4f05-be46-7b6ec32c14a2`)
+- Navy Wife (`3e54af14-bd7e-4d55-8592-ad3ef66d9488`)
+- Twinkle Toe (`abc7d9d0-9f1f-4417-890b-41c4c1585440`)
+- Because She Said So (`cd508962-7ef5-4235-afa7-8c4b3a84cbd2`)
+- Sheep at the Gate (`5b7085e5-2038-4087-937a-c251cffc3981`)
+- Twinkle Little Star (`fee74f7b-5976-4db9-ab0b-683a9c6fa2b8`)
+- Pocket Full of Butterflies (`cf644b3a-2ebb-4ec6-b477-66d1298afc6f`)
+- on your left tonight (`4049f3ce-068f-46f4-8561-3946af6ad49a`)
+- That Kind of Honor (`bbb235a1-c5c3-43eb-aba5-643961753dec`)
+- Whatever It Is (`77fbe70d-e1cd-4af0-9c95-b6d5becc8526`)
+- Raised the Zoo (`148b4915-36ea-44fb-a5e0-3d40f8a454ed`)
+- Between the Beats (`6f81ec52-83bf-42db-b370-a34baac1ba67`)
+- A Name I Would Trade (`5e807d33-7197-4fe1-ba20-02427b202bcc`)
+- Luna di Clara (`61be6ae2-ac25-4b26-a919-de2d073216bd`)
+- Sea Lion's Breath (`a3952912-85ec-483b-88c4-d6fa9f255a31`)
+- Sun Hidden in the Dark (`b94c932c-5ef5-43fa-8340-ae2f1bcb401c`)
+- Wishing Well (`51c9fd8f-f25a-45d5-88e3-10bc9d6686e4`)
+- Miss Blue (`59817a86-8ba2-423c-b62b-f4f95a0af76b`)
+- Red Sunset (`6248f6d8-b903-4571-8010-9bda562b7cc3`)
+- Wolf with a Bark (`23c52276-6682-43d6-8970-1385ba7a01e7`)
+- Ghosts Watching T (`2e4570e6-e0ae-480c-af61-386390358a24`)
+- Colors After the Sea (`069ed813-a8a6-4c19-bf76-2bbb68033a5d`)
+- Red Riding for a Sea of (`c6e140ef-b644-46b8-a037-f250a2ea5b86`)
+- If It Got Sensory (`c7ef2061-3a61-4a1d-9add-05d2085393d8`)
+- Chic'in Wutt? (`7627cbc2-500d-4011-8ebf-2b5c31c12fc6`)
+- Wobble🐈🤌🏾🤏🏻 (`151b31ba-4f4a-4847-accf-e994895542ca`)
+- Black Hole Spins (`26b69462-eeb0-4bbf-b9a4-d3755479ec18`)
+- Through the Woods (`01dfbaad-21a9-467b-be55-406e9d94f00d`)
+- If You Don't Know Me (`a36ed06c-2b3b-476a-be6b-740e7f5fe841`)
+- One More Little Bella (`43f99180-b982-454c-9b3f-18c8a4cd81c4`)
+- That Boy Liberty (`68115bf1-509d-4e21-b016-384952a6b823`)
+- We could call her Duno (`6c339c91-f145-4ab7-b8ae-16b407312838`)
+- 4:44 Denied Again (`dc1c0af0-9078-4673-bb3e-8150799ba8f9`)
+- 11:23 Meant to Meet? (`95d96276-be43-4671-8cd1-c8d9fc457f65`)
+- Same Sky (`6f3e0b03-2f94-4607-94ed-9d5754182e82`)
+- 2 a.m. Lights (`53d39c8a-7d30-420a-912a-2a25a2da5ed8`)
+- Sailor Too (`effde536-bc5f-4459-bcfd-7646d12c4293`)
+- About Forever Now (`e1b5c000-4ac3-4232-ab13-0849c18b139b`)
+- What’d ya Do? (`9a00b51a-2501-4982-a50f-1e74c6f9f78b`)
+- Cross my Eye (`1e27d1e6-dfaa-4a70-a711-d8770b702ca3`)
+- Am Carraway, Thu (`1141628d-52dd-4d0f-8589-06bfd24b11d2`)
+- Pour a Warm One (`d97699ee-5a86-43b0-9c55-d61b46a23361`)
+- Middle of a Spark (`c317b8e8-8d6f-407f-afe0-ed8fd829e130`)
+- Halfway Home (`91d68989-a434-4bcd-894e-37c562e3d7f6`)
+- I forgot what the mirror said last time (`a52851cb-b354-4be9-992e-b67c35936002`)
+- Signal in the Tide (Pipa Night Drift Mix) (`1ce6ea29-3b7f-4d56-bd59-8c4e8b4a2068`)
+- ‘Til the Light Walks Inn.wandering(), (`89627b28-46ea-4490-aeea-1a221e886d84`)
+- Dear Papa XX Asia (`cf60031b-9460-485d-bd68-42506adb63c3`)
+- Projectors (`49cfe1d9-95c9-4ff7-b0a9-297113490cd2`)
+- In the Shift (`b34d6a09-8a69-4525-886f-2a1ae0e6d784`)
+- Green xx Asia (`c44e0916-0e38-46b6-bd2b-8190e6cdc5b7`)
+- 3 a.m. Emoji Pain (`541895cd-136b-4d80-90f4-8753e2a84b2a`)
+- Off Track, Circle Back (`4af4b276-a951-4e39-9073-26a259799708`)
+- 📝 Campfire.exe (`999c5d5c-1229-4d50-a4f8-84135486a757`)
+- 🎼 Cap’n Thu & the Chicken Casadei (`40c31efb-0ddd-48ba-b696-e7d9df41a6cc`)
+- Card Declined (`9a2de4d7-e39a-4c39-9148-79592b85c151`)
+- Redacted Lullaby (`9fb26371-8a15-4f04-aa95-502b36fdcff8`)
+- PipasaySenpai Yippee x Bounce (`97cd5415-3eb8-41c5-b289-96c4573460c4`)
+- Blameless, Call Me (`d76f49b7-a3ca-4e6e-bb2c-ee97b08e4e46`)
+- I forgot what the mirror said last time (`fbae2b16-1b52-49a0-9a7b-ed5aa873ddab`)
+- First Date gl.itch(“hf”) (`c8247eb1-8300-40c8-a4de-858fb16c44ac`)
+- Iron Mask (`729cb99a-baac-41e1-ba64-b91afe94562c`)
+- Missing Gno.s() (`8c0cac5a-44cb-4db2-a1d7-22b7db5a4290`)
+- 🎵 “Gangsta in the Broadlight: The Gospel of Conviction” (ft. EmUhhim?)) (`45d3de8e-8447-4e7d-ab53-99e839a2afa8`)
+- "Bread, Conviction, and Poop in the Tub" (`4ef33755-66c4-48e6-9adb-8d6976e65629`)
+- The Best Bet Was the Bath (`6f6bbad5-e040-4307-8f5d-736205ac631c`)
+- Quitting the moon (`e543909b-71ca-44ee-921d-ccab1920be10`)
+- Show Me What’s True (`2ab6ce0b-e313-4304-b778-92cde3b73194`)
+- Eye Can’t Quit (`4236b04d-c8c0-456a-a8f2-d4033a4167ed`)
+- The Scientist (`1fef23f7-16a7-48a3-84da-6fcde36da97a`)
+- Never Meant For Us (`e72a3841-0d5a-4461-9cfe-3098135f1f7b`)
+- Save Point (Found You in the Code) (`88045508-caad-452e-8b72-0724827094ee`)
+- Read Receipts for Elaine (`3fb45f64-f1d9-4768-81b9-928061252ec5`)
+- On the Nose (`18fc92f3-79b1-408c-970f-b5d5f6d8e37d`)
+- Dear Past Life (`1851becb-d7dd-4c43-85a7-173345d76a3a`)
+- Iron Mask Traveler (`a0723f0f-1ba0-4831-b43c-12e046316b54`)
+- Left knee bent in the shadow of flame, (`30f10cdb-2840-4754-bf96-83d6f2a12d3c`)
+- Pour One (`204141da-ec17-40a7-b9b9-3aa99b1212c7`)
+- There Goes a Super (`6de63484-9108-4dac-b41f-3ea98a73492b`)
+- What's an S? (`b09e452f-68fa-4bfe-96c9-33ca839db5c5`)
+- Puget Cascades Frozen (`c535e8d7-b34a-409e-965a-2a9d6f2aefb0`)
+- Corner Check (`0544a573-c955-4025-9c13-ced74cd49075`)
+- Senpai River Radio (`d8cb01bb-0081-4b1f-85bc-8d673e459f01`)
+- Gilded Sirens (`66f20af1-e12e-4d62-b4be-5ece01c52abb`)
+- Meow-meow-pew (`a79cd5c4-045c-45dd-8925-9e57d3524559`)
+- Solder Heartbeat (`d9939f3a-2487-4e95-9ba9-e177028aa9d6`)
+- Tin Roof Valentine (`ec56c2ca-6e16-47d6-ad3a-a50ab06c760f`)
+- Tongue-Tied Thunder (`4fd61923-8884-488a-b93d-e9dff2c0b248`)
+- Lionfire Rhapsody (`154c3aca-ff43-48aa-a837-47e88429379d`)
+- Campfire Lullaby (`892ead59-b878-4779-95e5-d5e87ead8e1e`)
+- One More Watch (`4123ae1b-fbba-4f2a-a011-8c07eaa19277`)
+- Copper Sunrise (`8f56bfa5-717a-437a-a1ca-b69e2ea215a5`)
+- Calico Steam (`43e8cc80-5b2e-4bbd-b0ee-b8f1fed46d5a`)
+- TristrammyWhamBam (`13a6e54e-d703-4d8d-a3d6-77a44ffd0afd`)
+- BongBongBoink (`ec6c2dc5-3143-4f52-8a01-4a3061c25558`)
+- Bella Chiao Protocol x I don’t hear voices, but I feel like…/… (Mashup) (`f2828bb2-b196-4cbe-a831-4c7922941b6f`)
+- ⚓️.🏴‍☠️ife() (`181f765f-7e94-4d04-bb2e-3df63e63d1cf`)
+- Buckle Up (`df0e777d-497c-44da-8d59-7123ad55d805`)
+- Mountain out of Me (`1420a234-9d8e-4af7-a715-fd16f200484d`)
+- Rust and Rain (`ae9dcc02-1087-44ba-b6df-8faa541b6765`)
+- Neon Campfire (`a2cac7a0-634c-47de-8f09-b1c5cfda9f2b`)
+- Eatin' Am Good (`2726b80a-f3bc-45f8-99e6-ae06d7ddc02a`)
+- Pocket Full of Butterflies (`7852023d-3b30-487a-a487-3987842bcd0e`)
+- Pocket Full of Butterflies (`a5efeefd-6e77-45e3-8341-38453d66ee32`)
+- Rarely Him (`ef59c25c-465b-4de5-9604-00203532071c`)
+- One More Corner (`a1077286-e8c8-4486-ab4d-64020e76d726`)
+
+## Healing order
+
+1. Reconcile the signed-in Suno playlist and freeze the exact manifest song IDs.
+2. Fetch MP3 and WAV independently; validate container bytes and decodability before promotion.
+3. Fetch the latest complete stem family where Suno exposes stems; report source-unavailable separately.
+4. Persist non-empty lyrics (or a source-declared instrumental classification).
+5. Run stem/audio telemetry and STT lyric alignment; promote only actual, hashed, non-overlapping timings.
+6. Generate and preflight director scripts only after gates 1–5 are satisfied; leave explicit blocked receipts otherwise.
+
+## Measured healing plan
+
+- **Wave 0 — manifest truth:** repair stale declared paths by exact song ID and rerun this byte-level audit. Never count a declared path without validating its current bytes.
+- **Wave 1 — lossless custody:** obtain and validate the 171 missing WAV masters through the signed-in Suno download surface in bounded, resumable batches.
+- **Wave 2 — analysis:** produce actual timing for 68 vocal songs and complete audio/stem telemetry for 121 songs. Preserve the 52 source-unavailable stem cases as explicit states; the 124 source-available stem families already pass.
+- **Wave 3 — Director:** regenerate/preflight only exact IDs whose prior gates now pass. Today 2 pass the full protocol and 174 remain blocked by one or more upstream gates.
+- **Checkpoint each batch:** persist exact IDs, hashes, validation results, failed gate/retryability, and a fresh audit diff. Resume at the first invalid gate rather than rebuilding the whole registry.

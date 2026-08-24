@@ -22,6 +22,7 @@
 - `scripts/` owns Suno ingest, audio telemetry, lyric timing, and stem processing helpers.
 - `data/` is generated local registry state and should be treated as runtime/vault content unless explicitly sanitized.
 - `test/` covers registry and analysis behavior.
+- `docs/ECHO_ALBUM_UPDATE_CONTRACT.md` is the required six-gate meaning of “Update the Echo Album.” Do not report an album/song current from metadata reconciliation alone.
 - `SECURITY.md` defines publication secret checks.
 
 ## Safe Edit Boundaries
@@ -32,6 +33,8 @@
 - Treat generated registry JSON/SQLite as rebuildable operational state, not canonical source code.
 - Audio derivatives and telemetry belong in `hapa-vault` or Hypercore transfer batches.
 - Keep the HTTP API loopback-only unless the operator explicitly asks for network exposure and auth.
+- For an Echo update, validate actual bytes and exact song identity. MP3, WAV, source-available stems, lyrics/instrumental truth, measured analysis, and Director output are separate gates with explicit failures.
+- Prefer `scripts/update_registry_song.py` for one exported song. Reserve the destructive full SQLite rebuild in `ingest_suno.py` for bootstrap, schema/global-normalization changes, or explicit whole-library reconciliation.
 
 ## Hapa Connectivity
 
