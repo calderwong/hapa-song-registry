@@ -16,22 +16,23 @@ Global wiki link: `../Hapa_Worldbuilding_Wiki/Nodes/Existing/hapa-song-registry.
 
 ## Verified current state
 
-Verified from repository files and `data/registry.json` during the 2026-06-19 Dear Papa API pass:
+Verified from repository files and `data/registry.json` during the 2026-08-25 Echo Album healing pass:
 
 - App shell: Electron + vanilla HTML/CSS/JS (`src/main.js`, `src/preload.js`, `src/index.html`, `src/renderer.js`).
 - DAW/stem engine: Web Audio shared-clock multitrack engine in `src/daw-engine.js`.
 - Ingestion pipeline: Python scripts under `scripts/` build and verify registry data.
 - Test suite: Python `unittest` tests under `test/`.
 - Current registry counts in `data/registry.json`:
-  - 2,027 songs
-  - 5,112 stems
-  - 880 lyric/similarity groups
+  - 3,247 songs
+  - 6,156 stems
+  - 1,141 groups
   - 5,000 similarity links
   - 0 external lyric documents
-  - 270 lyric masters
-  - 874 prompt groups
+  - 360 lyric masters
+  - 977 prompt groups
   - 202 mashups
-  - 1,217 songs with lyric timings
+  - 1,310 songs with lyric timings
+  - 1,401 songs with audio telemetry
 
 ## Inputs
 
@@ -89,7 +90,7 @@ npm run check
 
 `npm run ingest` reads the Suno export and local lyric roots, writes `data/registry.json`, and updates `data/hapa_registry.sqlite`.
 
-Do not use the full rebuild for a single exported song. The active meaning of **“Update the Echo Album”**, including mandatory MP3, WAV, stems, lyrics, measured analysis, and Director-script gates, is defined in [`docs/ECHO_ALBUM_UPDATE_CONTRACT.md`](docs/ECHO_ALBUM_UPDATE_CONTRACT.md). Use `scripts/audit_echo_album.py` for a manifest-scoped completeness report and `scripts/update_registry_song.py --song-id <id> --apply` for a targeted registry upsert. The targeted command defaults to dry-run and rejects files whose bytes are not a recognized audio container.
+Do not use the full rebuild for one or a bounded set of exported songs. The active meaning of **“Update the Echo Album”**, including mandatory MP3, WAV, stems, lyrics, measured analysis, and Director-script gates, is defined in [`docs/ECHO_ALBUM_UPDATE_CONTRACT.md`](docs/ECHO_ALBUM_UPDATE_CONTRACT.md). Use `scripts/audit_echo_album.py` for a manifest-scoped completeness report, `scripts/heal_echo_album_inventory.py` for exact-ID local recovery, and repeatable `scripts/update_registry_song.py --song-id <id> --apply` arguments for one atomic targeted sync. These commands default to dry-run and reject invalid containers, stale provenance hashes, mismatched IDs, synthetic timing, and low-confidence timing evidence.
 
 ## Analyze lyric timings
 

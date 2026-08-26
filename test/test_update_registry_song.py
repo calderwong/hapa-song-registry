@@ -12,6 +12,87 @@ SPEC.loader.exec_module(UPDATE)
 
 
 class UpdateRegistrySongTest(unittest.TestCase):
+    def test_dry_run_drops_locally_discovered_timing_that_fails_strict_gate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            project = root / "project"
+            data = project / "data"
+            data.mkdir(parents=True)
+            registry_path = data / "registry.json"
+            registry_path.write_text(json.dumps({
+                "songs": [], "stems": [], "externalLyrics": [], "lyricMasters": [],
+                "promptGroups": [], "groups": [], "similarities": [], "counts": {},
+            }), encoding="utf-8")
+            playlist = root / "library" / "playlists" / "echo"
+            song_dir = playlist / "songs" / "1 - One - abc"
+            song_dir.mkdir(parents=True)
+            audio = song_dir / "song.mp3"
+            lyrics = song_dir / "lyrics.txt"
+            audio.write_bytes(b"ID3" + (b"\xff\xfb\x90\x64" + b"\0" * 413) * 5)
+            lyrics.write_text("hello world\n", encoding="utf-8")
+            metadata_path = song_dir / "metadata.json"
+            metadata_path.write_text(json.dumps({
+                "id": "abc", "status": "complete", "title": "One",
+                "audio_url": "https://example.invalid/abc.mp3",
+                "metadata": {"prompt": "hello", "duration": 10},
+            }), encoding="utf-8")
+            (song_dir / "lyric-timing.json").write_text(json.dumps({
+                "songId": "abc", "method": "stt_lyric_align", "engine": "whisper-cli",
+                "analyzedAt": "now", "confidence": .2,
+                "lines": [{"start": 0, "end": 1}],
+                "provenance": {
+                    "audioPath": str(audio), "audioSha256": "bad",
+                    "lyricsPath": str(lyrics), "lyricsSha256": "bad",
+                },
+            }), encoding="utf-8")
+            (song_dir / "lyric-timing.stt.json").write_text("{}", encoding="utf-8")
+            manifest_path = playlist / "manifest.hapa-avatar-builder.json"
+            manifest_path.write_text(json.dumps({"songs": [{
+                "id": "abc", "title": "One", "localDir": str(song_dir),
+                "metadataPath": str(metadata_path), "songPath": str(audio),
+            }]}), encoding="utf-8")
+            receipt = UPDATE.apply_update(
+                manifest_path, "abc", project, registry_path, data / "hapa_registry.sqlite", apply=False,
+            )
+            self.assertFalse(receipt["lyricTiming"])
+
+    def test_batch_dry_run_rebuilds_derived_state_once(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            project = root / "project"
+            data = project / "data"
+            data.mkdir(parents=True)
+            registry_path = data / "registry.json"
+            registry_path.write_text(json.dumps({
+                "songs": [], "stems": [], "externalLyrics": [], "lyricMasters": [],
+                "promptGroups": [], "groups": [], "similarities": [], "counts": {},
+            }), encoding="utf-8")
+            playlist = root / "library" / "playlists" / "echo"
+            rows = []
+            for index, song_id in enumerate(("abc", "def"), 1):
+                song_dir = playlist / "songs" / f"{index} - Song - {song_id}"
+                song_dir.mkdir(parents=True)
+                (song_dir / "song.mp3").write_bytes(b"ID3" + (b"\xff\xfb\x90\x64" + b"\0" * 413) * 5)
+                metadata_path = song_dir / "metadata.json"
+                metadata_path.write_text(json.dumps({
+                    "id": song_id, "status": "complete", "title": song_id,
+                    "audio_url": f"https://example.invalid/{song_id}.mp3",
+                    "metadata": {"prompt": song_id, "duration": 10},
+                }), encoding="utf-8")
+                rows.append({
+                    "id": song_id, "title": song_id, "localDir": str(song_dir),
+                    "metadataPath": str(metadata_path), "songPath": str(song_dir / "song.mp3"),
+                })
+            manifest_path = playlist / "manifest.hapa-avatar-builder.json"
+            manifest_path.write_text(json.dumps({"songs": rows}), encoding="utf-8")
+            receipt = UPDATE.apply_updates(
+                manifest_path, ["abc", "def"], project, registry_path,
+                data / "hapa_registry.sqlite", apply=False,
+            )
+            self.assertEqual(receipt["songCount"], 2)
+            self.assertEqual(receipt["songIds"], ["abc", "def"])
+            self.assertEqual({row["songId"] for row in receipt["rows"]}, {"abc", "def"})
+
     def test_dry_run_normalizes_only_requested_song(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)

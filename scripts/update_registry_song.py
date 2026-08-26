@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Incrementally upsert one exported playlist song into Registry JSON + SQLite.
+"""Incrementally upsert exact exported playlist songs into Registry JSON + SQLite.
 
-This is the fast path for an existing or newly exported song. It scans one song
-directory, rewrites the monolithic compatibility JSON once, and updates only the
-song/stem rows plus small derived tables in SQLite. It spawns no subprocesses,
-has concurrency 1, and performs no retries.
+This is the fast path for existing or newly exported songs. It scans only the
+requested song directories, rebuilds compatibility indexes once per invocation,
+and updates the requested song/stem rows in one SQLite transaction. It spawns no
+subprocesses, has concurrency 1, and performs no retries.
 """
 
 import argparse
@@ -45,9 +45,15 @@ def valid_master(song_dir, declared_path=None):
     raise ValueError(f"No valid master audio container in {song_dir}")
 
 
-def build_target(manifest_path, song_id, project_root):
+def build_target(manifest_path, song_id, project_root, manifest=None):
     manifest_path = pathlib.Path(manifest_path)
-    _, row = exact_manifest_song(manifest_path, song_id)
+    if manifest is None:
+        manifest, row = exact_manifest_song(manifest_path, song_id)
+    else:
+        matches = [row for row in manifest.get("songs", []) if str(row.get("id")) == str(song_id)]
+        if len(matches) != 1:
+            raise ValueError(f"Expected exactly one manifest row for {song_id}; found {len(matches)}")
+        row = matches[0]
     song_dir = pathlib.Path(row.get("localDir") or "")
     metadata_path = pathlib.Path(row.get("metadataPath") or song_dir / "metadata.json")
     clip = load_json(metadata_path)
@@ -63,14 +69,15 @@ def build_target(manifest_path, song_id, project_root):
     if len(songs) != 1:
         raise ValueError(f"Normalization did not produce one song for {song_id}")
     song = songs[0]
+    # normalize_clips may preserve a locally discovered timing object. Clear it
+    # before applying the stricter Echo evidence gate so a rejected timing can
+    # never survive merely because it was attached during normalization.
+    song.pop("lyricTiming", None)
     registry_stub = {}
     timing_paths = list(audit_lib.timing_candidates(row, song_dir, manifest_path.parent, registry_stub))
-    project_timing = pathlib.Path(project_root) / "data" / "lyric_timings" / f"{song_id}.json"
-    if project_timing.is_file() and project_timing not in timing_paths:
-        timing_paths.append(project_timing)
     for path in timing_paths:
         timing = ingest.read_json_file(path)
-        ok, _ = audit_lib.timing_gate(timing, path)
+        ok, _ = audit_lib.timing_gate(timing, path, song_id)
         if ok:
             timing.setdefault("sourcePath", str(path))
             song["lyricTiming"] = timing
@@ -117,13 +124,17 @@ def rebuild_derived(registry):
     return registry
 
 
-def merge_target(registry, song, stems):
+def merge_target_rows(registry, song, stems):
     song_id = song["id"]
     registry["songs"] = [row for row in registry.get("songs", []) if row.get("id") != song_id] + [song]
     registry["songs"].sort(key=lambda row: (row.get("createdAt") or "", row.get("id") or ""))
     registry["stems"] = [row for row in registry.get("stems", []) if row.get("parentId") != song_id] + stems
     registry["stems"].sort(key=lambda row: (row.get("parentId") or "", row.get("stemType") or "", row.get("id") or ""))
-    return rebuild_derived(registry)
+    return registry
+
+
+def merge_target(registry, song, stems):
+    return rebuild_derived(merge_target_rows(registry, song, stems))
 
 
 def insert_song(cur, song, generated_at):
@@ -214,65 +225,74 @@ def insert_stem(cur, stem, generated_at):
     ))
 
 
-def update_sqlite(db_path, registry, song_id):
+def replace_song_rows(cur, registry, song_id):
+    song = next(row for row in registry["songs"] if row.get("id") == song_id)
+    stems = [row for row in registry["stems"] if row.get("parentId") == song_id]
+    old_stem_ids = [row[0] for row in cur.execute("select id from stems where parent_id=?", (song_id,)).fetchall()]
+    subject_ids = [song_id, *old_stem_ids]
+    cur.execute("delete from song_authors where song_id=?", (song_id,))
+    cur.execute("delete from mashups where song_id=?", (song_id,))
+    cur.execute("delete from lyric_lines where song_id=?", (song_id,))
+    cur.execute("delete from lyric_sections where song_id=?", (song_id,))
+    cur.execute("delete from lyric_timing_runs where song_id=?", (song_id,))
+    cur.execute("delete from audio_telemetry_events where song_id=?", (song_id,))
+    cur.execute("delete from audio_telemetry_runs where song_id=?", (song_id,))
+    cur.execute("delete from facets where song_id=?", (song_id,))
+    for stem_id in old_stem_ids:
+        cur.execute("delete from stem_authors where stem_id=?", (stem_id,))
+    if old_stem_ids:
+        placeholders = ",".join("?" for _ in old_stem_ids)
+        cur.execute(
+            f"delete from derivatives where parent_id=? or child_id in ({placeholders})",
+            (song_id, *old_stem_ids),
+        )
+    else:
+        cur.execute("delete from derivatives where parent_id=?", (song_id,))
+    cur.execute("delete from stems where parent_id=?", (song_id,))
+    for subject_id in subject_ids:
+        cur.execute("delete from events where subject_id=?", (subject_id,))
+    insert_song(cur, song, registry.get("generatedAt"))
+    for stem in stems:
+        insert_stem(cur, stem, registry.get("generatedAt"))
+
+
+def replace_derived_rows(cur, registry):
+    for table in ("lyric_variations", "lyric_masters", "prompt_groups", "groups", "similarities"):
+        cur.execute(f"delete from {table}")
+    for master in registry.get("lyricMasters", []):
+        cur.execute("insert into lyric_masters values(?,?,?,?,?,?)", (
+            master["id"], master.get("lyricsFingerprint"), master.get("sourceTitle"), master.get("lyrics"),
+            json.dumps(master.get("authors", []), ensure_ascii=False), master.get("variationCount", 0),
+        ))
+        for value in master.get("variations", []):
+            cur.execute("insert into lyric_variations values(?,?,?,?,?,?,?)", (
+                master["id"], value.get("kind"), value.get("id"), value.get("title"), value.get("parentId"),
+                value.get("path"), json.dumps(value, ensure_ascii=False),
+            ))
+    for group in registry.get("promptGroups", []):
+        cur.execute("insert into prompt_groups values(?,?,?,?,?,?,?,?,?)", (
+            group["id"], group.get("lyricMasterId"), group.get("stylePromptFingerprint"), group.get("stylePrompt"),
+            group.get("songCount", 0), json.dumps(group.get("facets", {}), ensure_ascii=False),
+            json.dumps(group.get("contentTypes", []), ensure_ascii=False), group.get("mashupCount", 0),
+            json.dumps(group.get("songIds", []), ensure_ascii=False),
+        ))
+    for group in registry.get("groups", []):
+        cur.execute("insert into groups values(?,?,?,?,?)", (group["id"], group["kind"], group["key"], group["count"], json.dumps(group["songIds"])))
+    for similarity in registry.get("similarities", []):
+        cur.execute("insert into similarities values(?,?,?,?)", (similarity["songA"], similarity["songB"], similarity["score"], similarity["reason"]))
+
+
+def update_sqlite_many(db_path, registry, song_ids):
     db_path = pathlib.Path(db_path)
     if not db_path.is_file():
         raise ValueError(f"Registry SQLite does not exist; bootstrap once with ingest_suno.py: {db_path}")
-    song = next(row for row in registry["songs"] if row.get("id") == song_id)
-    stems = [row for row in registry["stems"] if row.get("parentId") == song_id]
     con = sqlite3.connect(db_path)
     try:
         cur = con.cursor()
-        old_stem_ids = [row[0] for row in cur.execute("select id from stems where parent_id=?", (song_id,)).fetchall()]
-        subject_ids = [song_id, *old_stem_ids]
         cur.execute("begin immediate")
-        cur.execute("delete from song_authors where song_id=?", (song_id,))
-        cur.execute("delete from mashups where song_id=?", (song_id,))
-        cur.execute("delete from lyric_lines where song_id=?", (song_id,))
-        cur.execute("delete from lyric_sections where song_id=?", (song_id,))
-        cur.execute("delete from lyric_timing_runs where song_id=?", (song_id,))
-        cur.execute("delete from audio_telemetry_events where song_id=?", (song_id,))
-        cur.execute("delete from audio_telemetry_runs where song_id=?", (song_id,))
-        cur.execute("delete from facets where song_id=?", (song_id,))
-        for stem_id in old_stem_ids:
-            cur.execute("delete from stem_authors where stem_id=?", (stem_id,))
-        if old_stem_ids:
-            placeholders = ",".join("?" for _ in old_stem_ids)
-            cur.execute(
-                f"delete from derivatives where parent_id=? or child_id in ({placeholders})",
-                (song_id, *old_stem_ids),
-            )
-        else:
-            cur.execute("delete from derivatives where parent_id=?", (song_id,))
-        cur.execute("delete from stems where parent_id=?", (song_id,))
-        for subject_id in subject_ids:
-            cur.execute("delete from events where subject_id=?", (subject_id,))
-        insert_song(cur, song, registry.get("generatedAt"))
-        for stem in stems:
-            insert_stem(cur, stem, registry.get("generatedAt"))
-        for table in ("lyric_variations", "lyric_masters", "prompt_groups", "groups", "similarities"):
-            cur.execute(f"delete from {table}")
-        for master in registry.get("lyricMasters", []):
-            cur.execute("insert into lyric_masters values(?,?,?,?,?,?)", (
-                master["id"], master.get("lyricsFingerprint"), master.get("sourceTitle"), master.get("lyrics"),
-                json.dumps(master.get("authors", []), ensure_ascii=False), master.get("variationCount", 0),
-            ))
-            for value in master.get("variations", []):
-                cur.execute("insert into lyric_variations values(?,?,?,?,?,?,?)", (
-                    master["id"], value.get("kind"), value.get("id"), value.get("title"), value.get("parentId"),
-                    value.get("path"), json.dumps(value, ensure_ascii=False),
-                ))
-        for group in registry.get("promptGroups", []):
-            cur.execute("insert into prompt_groups values(?,?,?,?,?,?,?,?,?)", (
-                group["id"], group.get("lyricMasterId"), group.get("stylePromptFingerprint"), group.get("stylePrompt"),
-                group.get("songCount", 0), json.dumps(group.get("facets", {}), ensure_ascii=False),
-                json.dumps(group.get("contentTypes", []), ensure_ascii=False), group.get("mashupCount", 0),
-                json.dumps(group.get("songIds", []), ensure_ascii=False),
-            ))
-        for group in registry.get("groups", []):
-            cur.execute("insert into groups values(?,?,?,?,?)", (group["id"], group["kind"], group["key"], group["count"], json.dumps(group["songIds"])))
-        for similarity in registry.get("similarities", []):
-            cur.execute("insert into similarities values(?,?,?,?)", (similarity["songA"], similarity["songB"], similarity["score"], similarity["reason"]))
+        for song_id in song_ids:
+            replace_song_rows(cur, registry, song_id)
+        replace_derived_rows(cur, registry)
         con.commit()
     except Exception:
         con.rollback()
@@ -281,18 +301,36 @@ def update_sqlite(db_path, registry, song_id):
         con.close()
 
 
-def apply_update(manifest_path, song_id, project_root, registry_path, sqlite_path, apply=False):
-    song, stems, library_root = build_target(manifest_path, song_id, project_root)
+def update_sqlite(db_path, registry, song_id):
+    update_sqlite_many(db_path, registry, [song_id])
+
+
+def apply_updates(manifest_path, song_ids, project_root, registry_path, sqlite_path, apply=False):
+    song_ids = list(dict.fromkeys(str(song_id) for song_id in song_ids))
+    if not song_ids:
+        raise ValueError("At least one --song-id is required")
     registry_path = pathlib.Path(registry_path)
-    registry = merge_target(load_json(registry_path), song, stems)
+    registry = load_json(registry_path)
+    manifest = load_json(manifest_path)
+    rows = []
+    library_root = None
+    for song_id in song_ids:
+        song, stems, library_root = build_target(manifest_path, song_id, project_root, manifest=manifest)
+        merge_target_rows(registry, song, stems)
+        rows.append({
+            "songId": song_id,
+            "title": song.get("title"),
+            "localPath": song.get("localPath"),
+            "stemCount": len(stems),
+            "lyricTiming": bool(song.get("lyricTiming")),
+            "audioTelemetry": bool(song.get("audioTelemetry")),
+        })
+    rebuild_derived(registry)
     registry["sourceLibrary"] = str(library_root)
     receipt = {
-        "songId": song_id,
-        "title": song.get("title"),
-        "localPath": song.get("localPath"),
-        "stemCount": len(stems),
-        "lyricTiming": bool(song.get("lyricTiming")),
-        "audioTelemetry": bool(song.get("audioTelemetry")),
+        "songCount": len(rows),
+        "songIds": song_ids,
+        "rows": rows,
         "mode": "apply" if apply else "dry-run",
     }
     if not apply:
@@ -300,7 +338,7 @@ def apply_update(manifest_path, song_id, project_root, registry_path, sqlite_pat
     temp_path = registry_path.with_suffix(registry_path.suffix + ".song-update.tmp")
     temp_path.write_text(json.dumps(registry, ensure_ascii=False), encoding="utf-8")
     try:
-        update_sqlite(sqlite_path, registry, song_id)
+        update_sqlite_many(sqlite_path, registry, song_ids)
         temp_path.replace(registry_path)
     finally:
         if temp_path.exists():
@@ -308,23 +346,41 @@ def apply_update(manifest_path, song_id, project_root, registry_path, sqlite_pat
     return receipt
 
 
+def apply_update(manifest_path, song_id, project_root, registry_path, sqlite_path, apply=False):
+    receipt = apply_updates(
+        manifest_path, [song_id], project_root, registry_path, sqlite_path, apply=apply,
+    )
+    return {**receipt["rows"][0], "mode": receipt["mode"]}
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", required=True)
-    parser.add_argument("--song-id", required=True)
+    parser.add_argument("--song-id", action="append", required=True)
     parser.add_argument("--project", default=str(ingest.DEFAULT_PROJECT))
     parser.add_argument("--registry")
     parser.add_argument("--sqlite")
+    parser.add_argument("--json-out")
     parser.add_argument("--apply", action="store_true")
     args = parser.parse_args()
     project = pathlib.Path(args.project)
-    receipt = apply_update(
+    receipt = apply_updates(
         args.manifest, args.song_id, project,
         args.registry or project / "data" / "registry.json",
         args.sqlite or project / "data" / "hapa_registry.sqlite",
         apply=args.apply,
     )
-    print(json.dumps(receipt, indent=2))
+    if args.json_out:
+        output = pathlib.Path(args.json_out)
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps({
+        "mode": receipt["mode"],
+        "songCount": receipt["songCount"],
+        "lyricTiming": sum(row["lyricTiming"] for row in receipt["rows"]),
+        "audioTelemetry": sum(row["audioTelemetry"] for row in receipt["rows"]),
+        "jsonOut": str(args.json_out or ""),
+    }, indent=2))
 
 
 if __name__ == "__main__":

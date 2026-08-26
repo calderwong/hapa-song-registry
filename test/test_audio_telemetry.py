@@ -4,6 +4,8 @@ import pathlib
 import sqlite3
 import tempfile
 import unittest
+import wave
+from unittest import mock
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location('audio_telemetry', ROOT / 'scripts' / 'audio_telemetry.py')
@@ -15,6 +17,20 @@ INGEST_SPEC.loader.exec_module(ingest)
 
 
 class AudioTelemetryTest(unittest.TestCase):
+    def test_pcm_peak_reader_streams_windows_without_loading_entire_file(self):
+        with tempfile.TemporaryDirectory() as d:
+            wav_path = pathlib.Path(d) / 'sample.wav'
+            with wave.open(str(wav_path), 'wb') as handle:
+                handle.setnchannels(1)
+                handle.setsampwidth(2)
+                handle.setframerate(1000)
+                handle.writeframes((b'\x00\x20' * 1000))
+            waveform, curve, warnings = audio_telemetry.read_pcm_peaks(wav_path, 1000, 50)
+            self.assertEqual(warnings, [])
+            self.assertEqual(waveform['peakCount'], 20)
+            self.assertEqual(len(curve), 20)
+            self.assertAlmostEqual(waveform['duration'], 1.0)
+
     def test_enqueue_builds_durable_queue_with_analysis_key_and_blocked_missing_audio(self):
         with tempfile.TemporaryDirectory() as d:
             root = pathlib.Path(d)
@@ -50,6 +66,42 @@ class AudioTelemetryTest(unittest.TestCase):
                 self.assertIn('missing', missing['lastError'])
             finally:
                 audio_telemetry.ROOT, audio_telemetry.DATA, audio_telemetry.REGISTRY_PATH, audio_telemetry.DB_PATH, audio_telemetry.TELEMETRY_ROOT, audio_telemetry.QUEUE_PATH = old_root, old_data, old_registry, old_db, old_troot, old_queue
+
+    def test_worker_targets_only_requested_song_and_never_auto_requeues_failure(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = pathlib.Path(d)
+            data = root / 'data'
+            telemetry = data / 'audio_telemetry'
+            telemetry.mkdir(parents=True)
+            songs = []
+            for song_id in ('older', 'requested'):
+                audio_path = root / f'{song_id}.mp3'
+                audio_path.write_bytes(b'audio')
+                songs.append({'id': song_id, 'title': song_id, 'localPath': str(audio_path)})
+            (data / 'registry.json').write_text(json.dumps({'songs': songs}), encoding='utf-8')
+            queue = audio_telemetry.default_queue()
+            queue['queue'] = [
+                {'id': 'old', 'songId': 'older', 'title': 'older', 'status': 'queued', 'priority': 50, 'attempts': 0, 'maxAttempts': 1, 'createdAt': '1', 'analysisKey': 'old'},
+                {'id': 'new', 'songId': 'requested', 'title': 'requested', 'status': 'queued', 'priority': 50, 'attempts': 0, 'maxAttempts': 1, 'createdAt': '2', 'analysisKey': 'new'},
+            ]
+            old_values = audio_telemetry.DATA, audio_telemetry.REGISTRY_PATH, audio_telemetry.DB_PATH, audio_telemetry.TELEMETRY_ROOT, audio_telemetry.QUEUE_PATH
+            try:
+                audio_telemetry.DATA = data
+                audio_telemetry.REGISTRY_PATH = data / 'registry.json'
+                audio_telemetry.DB_PATH = data / 'registry.sqlite'
+                audio_telemetry.TELEMETRY_ROOT = telemetry
+                audio_telemetry.QUEUE_PATH = telemetry / 'queue.json'
+                audio_telemetry.write_json(audio_telemetry.QUEUE_PATH, queue)
+                with mock.patch.object(audio_telemetry, 'latest_matches', return_value=False), mock.patch.object(audio_telemetry, 'analyze_song', side_effect=RuntimeError('stop')):
+                    result = audio_telemetry.worker(limit=1, song_ids=['requested'])
+                saved = json.loads(audio_telemetry.QUEUE_PATH.read_text())
+                older = next(job for job in saved['queue'] if job['songId'] == 'older')
+                requested = next(job for job in saved['queue'] if job['songId'] == 'requested')
+                self.assertEqual(result['failed'], 1)
+                self.assertEqual(older['status'], 'queued')
+                self.assertEqual(requested['status'], 'failed')
+            finally:
+                audio_telemetry.DATA, audio_telemetry.REGISTRY_PATH, audio_telemetry.DB_PATH, audio_telemetry.TELEMETRY_ROOT, audio_telemetry.QUEUE_PATH = old_values
 
     def test_ingest_reattaches_audio_telemetry_manifest_and_sqlite_tables(self):
         with tempfile.TemporaryDirectory() as d:

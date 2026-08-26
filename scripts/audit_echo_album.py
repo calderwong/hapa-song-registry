@@ -6,6 +6,7 @@ no retries, and only writes when --json-out or --markdown-out is supplied.
 """
 
 import argparse
+import hashlib
 import json
 import pathlib
 from collections import Counter
@@ -14,6 +15,13 @@ from datetime import datetime, timezone
 
 MIN_AUDIO_BYTES = 1024
 MIN_TIMING_CONFIDENCE = 0.60
+MEASURED_TIMING_ENGINES = {"whisper-cli", "whisper.cpp"}
+BLOCKING_TIMING_WARNING_TOKENS = (
+    "low_match_ratio",
+    "many_unmatched_lines",
+    "overlapping_line_windows",
+    "duplicate_line_starts",
+)
 
 
 def read_json(path, fallback=None):
@@ -78,13 +86,39 @@ def is_instrumental(metadata):
     return metadata.get("make_instrumental") is True or nested.get("make_instrumental") is True
 
 
-def timing_gate(doc, source_path):
+def sha256_file(path):
+    digest = hashlib.sha256()
+    try:
+        with pathlib.Path(path).open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+    except OSError:
+        return None
+    return digest.hexdigest()
+
+
+def sha256_lyrics_text(path):
+    """Match the Music Viz contract: hash decoded canonical text after strip()."""
+    try:
+        text = pathlib.Path(path).read_text(encoding="utf-8").strip()
+    except (OSError, UnicodeError):
+        return None
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def timing_gate(doc, source_path, expected_song_id=None):
     reasons = []
     if not isinstance(doc, dict):
         return False, ["missing-or-invalid-json"]
+    if expected_song_id is not None and str(doc.get("songId") or "") != str(expected_song_id):
+        reasons.append("song-id-mismatch")
     method = str(doc.get("method") or "").lower()
     if "synthetic" in method or "fallback" in method or "weighted_even" in method:
         reasons.append("synthetic-method")
+    provenance = doc.get("provenance") if isinstance(doc.get("provenance"), dict) else {}
+    engine = str(doc.get("engine") or provenance.get("timingSource") or "").strip().lower()
+    if engine not in MEASURED_TIMING_ENGINES:
+        reasons.append("non-measured-engine")
     if not doc.get("analyzedAt"):
         reasons.append("missing-analyzed-at")
     try:
@@ -96,6 +130,10 @@ def timing_gate(doc, source_path):
     lines = doc.get("lines") if isinstance(doc.get("lines"), list) else []
     if not lines:
         reasons.append("no-timed-lines")
+    try:
+        duration = float(doc.get("duration") or 0)
+    except (TypeError, ValueError):
+        duration = 0
     prior_end = -1.0
     starts = set()
     for line in lines:
@@ -105,7 +143,7 @@ def timing_gate(doc, source_path):
         except (AttributeError, TypeError, ValueError):
             reasons.append("invalid-line-interval")
             break
-        if start < 0 or end <= start:
+        if start < 0 or end <= start or (duration > 0 and end > duration + 0.25):
             reasons.append("invalid-line-interval")
             break
         rounded = round(start, 4)
@@ -116,10 +154,45 @@ def timing_gate(doc, source_path):
         if start < prior_end - 0.001:
             reasons.append("overlapping-lines")
             break
+        for word in line.get("words", []) if isinstance(line, dict) else []:
+            try:
+                word_start = float(word.get("start", word.get("startTime")))
+                word_end = float(word.get("end", word.get("endTime")))
+            except (AttributeError, TypeError, ValueError):
+                reasons.append("invalid-word-interval")
+                break
+            if word_start < 0 or word_end <= word_start:
+                reasons.append("invalid-word-interval")
+                break
         prior_end = end
-    provenance = doc.get("provenance") if isinstance(doc.get("provenance"), dict) else {}
+    if not provenance.get("audioPath") or not provenance.get("audioSha256"):
+        reasons.append("missing-audio-provenance")
+    if not provenance.get("lyricsPath") or not provenance.get("lyricsSha256"):
+        reasons.append("missing-lyrics-provenance")
     if not provenance.get("audioSha256") or not provenance.get("lyricsSha256"):
         reasons.append("missing-audio-or-lyrics-hash")
+    audio_path = provenance.get("audioPath")
+    lyrics_path = provenance.get("lyricsPath")
+    if audio_path and provenance.get("audioSha256"):
+        actual_audio_hash = sha256_file(audio_path)
+        if actual_audio_hash is None:
+            reasons.append("missing-provenance-audio")
+        elif actual_audio_hash != provenance.get("audioSha256"):
+            reasons.append("stale-audio-hash")
+    if lyrics_path and provenance.get("lyricsSha256"):
+        actual_lyrics_hash = sha256_lyrics_text(lyrics_path)
+        if actual_lyrics_hash is None:
+            reasons.append("missing-provenance-lyrics")
+        elif actual_lyrics_hash != provenance.get("lyricsSha256"):
+            reasons.append("stale-lyrics-hash")
+    warnings = [str(value) for value in doc.get("warnings", [])] if isinstance(doc.get("warnings"), list) else []
+    blocking_warning = any(
+        token in warning
+        for warning in warnings
+        for token in BLOCKING_TIMING_WARNING_TOKENS
+    )
+    if blocking_warning and not valid_timing_adjudication(doc):
+        reasons.append("unadjudicated-alignment-warning")
     stt_candidates = [
         pathlib.Path(str(source_path).replace(".json", ".stt.json")),
         pathlib.Path(source_path).with_name("lyric-timing.stt.json"),
@@ -127,6 +200,26 @@ def timing_gate(doc, source_path):
     if not any(path.is_file() for path in stt_candidates):
         reasons.append("missing-stt-sidecar")
     return not reasons, sorted(set(reasons))
+
+
+def valid_timing_adjudication(doc):
+    receipt = doc.get("adjudication") if isinstance(doc.get("adjudication"), dict) else {}
+    evidence = receipt.get("evidence") if isinstance(receipt.get("evidence"), dict) else {}
+    provenance = doc.get("provenance") if isinstance(doc.get("provenance"), dict) else {}
+    try:
+        confidence_matches = float(evidence.get("confidence")) == float(doc.get("confidence"))
+        matched_ratio_matches = float(evidence.get("matchedRatio")) == float((doc.get("stats") or {}).get("matchedRatio"))
+    except (TypeError, ValueError):
+        return False
+    return bool(
+        receipt.get("schemaVersion") == "hapa.echo.lyric-evidence-adjudication.v1"
+        and receipt.get("disposition") == "accepted"
+        and receipt.get("humanReviewed") is False
+        and evidence.get("audioSha256") == provenance.get("audioSha256")
+        and evidence.get("lyricsSha256") == provenance.get("lyricsSha256")
+        and confidence_matches
+        and matched_ratio_matches
+    )
 
 
 def timing_candidates(song, local_dir, playlist_root, registry_song):
@@ -225,7 +318,7 @@ def audit(manifest_path, registry_path=None, builder_root=None):
         timing_path = None
         timing_reasons = ["missing"]
         for candidate in timing_candidates(song, local_dir, playlist_root, registry_song):
-            ok, reasons = timing_gate(read_json(candidate), candidate)
+            ok, reasons = timing_gate(read_json(candidate), candidate, song_id)
             if ok:
                 timing_path = candidate
                 timing_reasons = []

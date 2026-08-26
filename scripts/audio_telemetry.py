@@ -10,6 +10,7 @@ blocked/fallback artifacts instead of silently pretending hook detection is fact
 from __future__ import annotations
 
 import argparse
+import audioop
 import contextlib
 import hashlib
 import json
@@ -194,7 +195,7 @@ def make_job(song: Dict[str, Any], priority: int = 50, overwrite: bool = False) 
         "status": status,
         "priority": priority,
         "attempts": 0,
-        "maxAttempts": 3,
+        "maxAttempts": 1,
         "createdAt": utcnow(),
         "updatedAt": utcnow(),
         "sourceAudio": source,
@@ -284,30 +285,28 @@ def read_pcm_peaks(wav_path: pathlib.Path, sample_rate: int, window_ms: int) -> 
             channels = wf.getnchannels()
             width = wf.getsampwidth()
             sr = wf.getframerate()
-            raw = wf.readframes(nframes)
+            if width != 2:
+                return {"duration": nframes / max(1, sr), "sampleRate": sr, "windowMs": window_ms, "peaks": []}, [], [f"unsupported sample width {width}; expected 16-bit PCM"]
+            win = max(1, int(sr * window_ms / 1000))
+            peak_rows = []
+            rms_curve = []
+            peak_abs = 0.0
+            while True:
+                raw = wf.readframes(win)
+                if not raw:
+                    break
+                if channels > 1:
+                    raw = audioop.tomono(raw, width, 0.5, 0.5)
+                minimum, maximum = audioop.minmax(raw, width)
+                rms = audioop.rms(raw, width) / 32768.0
+                normalized_min = minimum / 32768.0
+                normalized_max = maximum / 32768.0
+                peak_abs = max(peak_abs, abs(normalized_min), abs(normalized_max))
+                peak_rows.append([round(normalized_min, 4), round(normalized_max, 4), round(rms, 4)])
+                rms_curve.append(rms)
     except Exception as e:
         return {"duration": None, "sampleRate": sample_rate, "windowMs": window_ms, "peaks": []}, [], [f"wave read failed: {e}"]
-    if width != 2:
-        return {"duration": nframes / max(1, sample_rate), "sampleRate": sr, "windowMs": window_ms, "peaks": []}, [], [f"unsupported sample width {width}; expected 16-bit PCM"]
-    import struct
-    count = len(raw) // 2
-    samples = struct.unpack("<" + "h" * count, raw)
-    if channels > 1:
-        samples = samples[::channels]
-    vals = [s / 32768.0 for s in samples]
-    win = max(1, int(sr * window_ms / 1000))
-    peak_rows = []
-    rms_curve = []
-    for i in range(0, len(vals), win):
-        seg = vals[i:i + win]
-        if not seg:
-            continue
-        mn, mx = min(seg), max(seg)
-        rms = math.sqrt(sum(x * x for x in seg) / len(seg))
-        peak_rows.append([round(mn, 4), round(mx, 4), round(rms, 4)])
-        rms_curve.append(rms)
-    duration = len(vals) / max(1, sr)
-    peak_abs = max((abs(x) for x in vals), default=0.0)
+    duration = nframes / max(1, sr)
     peak_dbfs = 20 * math.log10(peak_abs) if peak_abs > 0 else None
     rms_mean = statistics.mean(rms_curve) if rms_curve else 0.0
     rms_peak = max(rms_curve) if rms_curve else 0.0
@@ -449,7 +448,7 @@ def analyze_song(song: Dict[str, Any], job: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def commit_run(run: Dict[str, Any], job: Dict[str, Any]) -> Dict[str, Any]:
+def commit_run(run: Dict[str, Any], job: Dict[str, Any], refresh_exports: bool = True) -> Dict[str, Any]:
     ensure_layout()
     song_id = run["songId"]
     run_id = run["runId"]
@@ -478,7 +477,8 @@ def commit_run(run: Dict[str, Any], job: Dict[str, Any]) -> Dict[str, Any]:
     }
     write_json(manifest_path, manifest)
     update_sqlite_for_runs([run], DB_PATH)
-    export_jsonl()
+    if refresh_exports:
+        export_jsonl()
     return manifest
 
 
@@ -523,12 +523,18 @@ def update_sqlite_queue(state: Dict[str, Any], db_path: pathlib.Path = DB_PATH) 
     con.commit(); con.close()
 
 
-def worker(limit: int = 1) -> Dict[str, Any]:
+def worker(limit: int = 1, song_ids: Optional[List[str]] = None) -> Dict[str, Any]:
     registry = load_registry()
     songs_by_id = {s.get("id"): s for s in registry.get("songs", [])}
     state = load_queue()
     completed = failed = blocked = skipped = 0
-    jobs = sorted([j for j in state.get("queue", []) if j.get("status") == "queued"], key=lambda j: (-int(j.get("priority", 50)), j.get("createdAt", "")))
+    wanted = set(song_ids or [])
+    jobs = sorted([
+        job for job in state.get("queue", [])
+        if job.get("status") == "queued"
+        and (not wanted or job.get("songId") in wanted)
+    ], key=lambda job: (-int(job.get("priority", 50)), job.get("createdAt", "")))
+    wrote_run = False
     for job in jobs[:limit]:
         song = songs_by_id.get(job.get("songId"))
         if not song:
@@ -541,13 +547,15 @@ def worker(limit: int = 1) -> Dict[str, Any]:
             job.update({"status": "running", "attempts": int(job.get("attempts", 0)) + 1, "updatedAt": utcnow()}); save_queue(state)
             run = analyze_song(song, job)
             job["status"] = "writing"; job["updatedAt"] = utcnow(); save_queue(state)
-            manifest = commit_run(run, job)
+            manifest = commit_run(run, job, refresh_exports=False)
+            wrote_run = True
             job.update({"status": "completed", "updatedAt": utcnow(), "runId": manifest.get("runId"), "manifestPath": manifest.get("runPath"), "lastError": None})
             completed += 1
         except Exception as e:
-            attempts = int(job.get("attempts", 1))
-            job.update({"status": "failed" if attempts >= int(job.get("maxAttempts", 3)) else "queued", "updatedAt": utcnow(), "lastError": str(e)})
+            job.update({"status": "failed", "updatedAt": utcnow(), "lastError": str(e)})
             failed += 1
+    if wrote_run:
+        export_jsonl()
     save_queue(state)
     update_sqlite_queue(state)
     return {"completed": completed, "failed": failed, "blocked": blocked, "skipped": skipped, "telemetry": state.get("telemetry", {})}
@@ -586,7 +594,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Hapa audio telemetry queue/analyzer")
     sub = parser.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("enqueue"); p.add_argument("--song", action="append", default=[]); p.add_argument("--limit", type=int); p.add_argument("--overwrite", action="store_true")
-    p = sub.add_parser("worker"); p.add_argument("--limit", type=int, default=1)
+    p = sub.add_parser("worker"); p.add_argument("--limit", type=int, default=1); p.add_argument("--song", action="append", default=[])
     p = sub.add_parser("show"); p.add_argument("song_id", nargs="?")
     sub.add_parser("export")
     p = sub.add_parser("analyze"); p.add_argument("song_id"); p.add_argument("--overwrite", action="store_true")
@@ -594,14 +602,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.cmd == "enqueue":
         result = enqueue(args.song, overwrite=args.overwrite, limit=args.limit)
     elif args.cmd == "worker":
-        result = worker(limit=args.limit)
+        result = worker(limit=args.limit, song_ids=args.song)
     elif args.cmd == "show":
         result = show(args.song_id)
     elif args.cmd == "export":
         result = export_jsonl()
     elif args.cmd == "analyze":
         enq = enqueue([args.song_id], overwrite=args.overwrite, limit=1)
-        wrk = worker(limit=1)
+        wrk = worker(limit=1, song_ids=[args.song_id])
         result = {"enqueue": enq, "worker": wrk, "show": show(args.song_id)}
     else:
         raise AssertionError(args.cmd)
