@@ -292,10 +292,16 @@ class PeerMusic {
       recordingId: ref.manifest.recording.id, assetId: asset.assetId, manifestDigest: ref.manifestDigest, coreKey: ref.coreKey,
       title: ref.manifest.recording.title, credits: ref.manifest.credits,
       introducer: d.introducer ? { kind: String(d.introducer.kind || 'participant').slice(0, 20), id: String(d.introducer.id || '').slice(0, 80), label: String(d.introducer.label || '').slice(0, 80) } : null,
-      encounter: { app: String(d.app || 'unknown').slice(0, 40), sessionId: String(d.sessionId || '').slice(0, 120), playlistId: d.playlistId ? String(d.playlistId).slice(0, 120) : null, queueRevision: d.queueRevision ?? null, entryId: d.entryId ? String(d.entryId).slice(0, 80) : null, heardAt: d.heardAt || null },
+      encounter: { app: String(d.app || 'unknown').slice(0, 40), sessionId: String(d.sessionId || '').slice(0, 120), playlistId: d.playlistId ? String(d.playlistId).slice(0, 120) : null, queueRevision: d.queueRevision ?? null, entryId: d.entryId ? String(d.entryId).slice(0, 80) : null, heardAt: d.heardAt || null, heard: !!d.heardAt },
       source: { nodeId: ref.manifest.issuer.nodeId, label: ref.manifest.issuer.label },
     };
-    await appendDurable(this.dir('retention', 'discoveries.ndjson'), JSON.stringify(discoveryRec));
+    // the same encounter again (a repeated click or a retry) reuses its discovery: idempotent per
+    // encounter; a different introducer or session of the same bytes is a distinct discovery
+    const sameEncounter = (x) => x.assetId === asset.assetId && x.encounter?.app === discoveryRec.encounter.app && x.encounter?.sessionId === discoveryRec.encounter.sessionId
+      && x.encounter?.entryId === discoveryRec.encounter.entryId && (x.introducer?.id ?? null) === (discoveryRec.introducer?.id ?? null);
+    const prior = discoveryRec.encounter.sessionId ? (await this.encounters()).find(sameEncounter) : null;
+    if (prior) discoveryRec.discoveryId = prior.discoveryId;
+    else await appendDurable(this.dir('retention', 'discoveries.ndjson'), JSON.stringify(discoveryRec));
     const acquisitionId = `acq-${asset.sha256.slice(0, 32)}`;
     let job = this.jobs.get(acquisitionId);
     if (!job) {
@@ -304,7 +310,7 @@ class PeerMusic {
     } else if (job.ref.coreKey !== ref.coreKey && !job.providers.some((p) => p.port === ref.peer.port)) {
       job.providers.push(ref.peer); // another provider offering the same verified bytes
     }
-    job.discoveries.push(discoveryRec.discoveryId);
+    if (!job.discoveries.includes(discoveryRec.discoveryId)) job.discoveries.push(discoveryRec.discoveryId);
     if (job.state === 'download-failed-reference-saved' || job.state === 'saved-paused') { job.state = 'saved-downloading'; job.attempts = 0; }
     await this._saveJob(job);
     if (job.state === 'available-offline') await this._refreshIntroductions(asset.assetId); // same bytes, one more discovery

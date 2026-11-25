@@ -59,7 +59,7 @@ async function main() {
     // 1. transfer + verified retention
     const ref1 = await src.offerSong('s1');
     assert.equal(ref1.manifest.credits.creators, null, 'unknown creators stay unknown');
-    const disc = (label) => ({ app: 'test', sessionId: 'match-1', playlistId: 'contribution:red', queueRevision: 3, entryId: 'red-library-1', heardAt: new Date().toISOString(), introducer: { kind: 'avatar', id: 'red-reaper', label } });
+    const disc = (label, id = 'red-reaper') => ({ app: 'test', sessionId: 'match-1', playlistId: 'contribution:red', queueRevision: 3, entryId: 'red-library-1', heardAt: new Date().toISOString(), introducer: { kind: 'avatar', id, label } });
     const k1 = await rcv.keep(ref1, disc('Red'));
     const encountersNow = await rcv.encounters();
     assert.equal(encountersNow.length, 1, 'the discovery is durable before keep() returns');
@@ -73,8 +73,13 @@ async function main() {
     assert.equal(lib1[0].collection, undefined, 'no collection default');
     step('transfer and verified retention', { acquisitionId: k1.acquisitionId, receipt: done1.retained, bytes: lib1[0].length });
 
-    // 2. dedup: same bytes, a second discovery
-    const k1b = await rcv.keep(ref1, disc('Red again'));
+    // 2a. the same encounter again (a repeated click or a retry) is idempotent: no second discovery
+    const k1r = await rcv.keep(ref1, disc('Red'));
+    assert.equal(k1r.discoveryId, k1.discoveryId);
+    assert.equal(k1r.discoveries, 1);
+    assert.equal((await rcv.encounters()).length, 1);
+    // 2b. dedup: same bytes introduced by someone else, a second discovery
+    const k1b = await rcv.keep(ref1, disc('Blue', 'blue-someone'));
     assert.equal(k1b.acquisitionId, k1.acquisitionId);
     assert.equal(k1b.state, 'available-offline');
     assert.equal(k1b.discoveries, 2);
