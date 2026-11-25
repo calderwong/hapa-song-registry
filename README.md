@@ -148,18 +148,22 @@ Bananas attribution option: contributors may opt into Bananas work-contribution 
 - Lyric timing is generated offline from local audio. The analyzer uses purchased/generated Vocals stems when available and falls back to the full mix otherwise. These are phrase-level, audio-derived timings rather than word-level forced alignment; songs with dense mixes or ad-libbed/generated vocals may still be approximate.
 - Stem playback and DAW engine behavior depend on browser/Electron Web Audio support and readable local audio paths.
 
-<!-- HAPA-README-SCREENSHOT-2026-05-22 -->
-
-## Screenshot
-
-![hapa-song-registry UI screenshot](docs/assets/screenshots/readme-hapa-song-registry-static-fallback.png)
-
-Hapa Song Registry static-file fallback; Electron preload is required for the full registry UI.
-
-
-<!-- HAPA-README-QUALITY-PASS-2026-05-22 -->
 
 ## Hapa ecosystem context
+
+<p>
+  <img src="docs/assets/hapa-ecosystem-context/overview.jpg" alt="Hapa ecosystem context visual showing modular nodes, human and AI-agent interfaces, Hapa Cards, avatar-agents, Second Brain, and wiki enrichment loop" width="100%">
+</p>
+
+### Shared ecosystem pattern
+
+Hapa is built as a constellation of modular nodes. Each node owns a focused capability, but participates in a shared protocol for provenance, handoff, cards, memory, and operations.
+
+Every node is designed for both human operators and AI agents. The target contract is three surfaces: a UI for direct human review/control, an API for node-to-node and agent calls, and a CLI for scripted runs, audits, and handoffs. Individual repos may be at different maturity levels, but the public contract is that humans and agents can inspect, operate, and verify the node.
+
+Hapa nodes power AI agents and avatar-agents that build new nodes and enhance existing ones. As work moves through the ecosystem, it is mined for utility, wisdom, and repeatable logic, then distilled into Hapa Cards: portable packets of skills, context, memories, and operational patterns.
+
+Humans and AIs use Hapa Cards to discuss, ideate, prototype, and deploy increasingly complex workflows through a playable, card-collecting mechanic. Collaboration history, skills, work artifacts, and canonical decisions are stored in [hapa-second-brain](https://github.com/calderwong/hapa-second-brain), enriched into [Hapa Worldbuilding Wiki](https://github.com/calderwong/hapa-worldbuilding-wiki) entries, and converted back into cards. Avatar-agents can also be combined or specialized into purpose-built identities with their own storage, lore, canon, card decks, skills, and protocols.
 
 ### Purpose
 
@@ -204,3 +208,13 @@ Local registry for Hapa songs, Suno/imported audio assets, lyrics, prompts, timi
 - Prefer loopback/local operation first; expose network services only with explicit auth and operator intent.
 - When this node produces artifacts for another node, record enough provenance for the receiving node or wiki page to recover the source path, command, prompt, or API request.
 - Keep `README.md`, `LICENSE`, `NOTICE.md` where applicable, and repo-local screenshots current as the node evolves.
+
+<!-- HAPA_NODE_ATLAS_DEMO:START -->
+## See It In Action
+
+<a href="https://calderwong.github.io/hapa-node-atlas/">
+  <img src="https://calderwong.github.io/hapa-node-atlas/assets/atalas-hero-loop-poster.jpg" alt="Hapa Node Atlas live demo" width="360">
+</a>
+
+[Open the Hapa Node Atlas demo](https://calderwong.github.io/hapa-node-atlas/)
+<!-- HAPA_NODE_ATLAS_DEMO:END -->
