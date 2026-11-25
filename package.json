@@ -32,5 +32,8 @@
   "type": "commonjs",
   "devDependencies": {
     "electron": "^42.2.0"
+  },
+  "dependencies": {
+    "hypercore": "11.40.4"
   }
 }

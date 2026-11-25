@@ -65,3 +65,7 @@ venv/
 *.sqlite-shm
 *.db-wal
 *.db-shm
+
+# peer music: per-library bearer token, offer cores, replicas, retained assets and discovery records (local vault content)
+data/api-token
+data/peer-music/
